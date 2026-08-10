@@ -1,0 +1,64 @@
+name: Build Windows Release
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Read version (master only)
+        if: github.ref_name == 'master'
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows executable
+        run: npm run build:windows
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: dist/*.exe
+
+      - name: Upload artifact (dev branch)
+        if: github.ref_name == 'dev'
+        uses: actions/upload-artifact@v7
+        with:
+          name: BotW-Live-Savegame-Monitor
+          path: dist/*.exe
+          retention-days: 14
+
+      - name: Create GitHub Release (master branch)
+        if: github.ref_name == 'master'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "v${{ env.VERSION }}" > /dev/null 2>&1; then
+            echo "Release v${{ env.VERSION }} already exists — skipping."
+          else
+            gh release create "v${{ env.VERSION }}" \
+              --generate-notes \
+              dist/*.exe dist/latest.yml
+          fi

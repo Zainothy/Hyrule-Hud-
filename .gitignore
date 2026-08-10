@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+.claude/
+CLAUDE.md
+server/.env
+server/data/
+!server/data/.gitkeep
+server/style-example.html
+favicon.ico
+dist/
+docs/superpowers/
+.worktrees/
+.continue/
+.continueignore

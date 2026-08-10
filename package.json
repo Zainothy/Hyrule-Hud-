@@ -1,0 +1,94 @@
+{
+  "name": "hyrule-hud",
+  "version": "0.1.0",
+  "description": "A power-user live save monitor and minimap for Zelda completionists and speedrunners. Reads your emulator save files directly (no mods, no plugins) and renders live completion progress, player position, and stats in the browser. Currently supports BotW on Cemu (Wii U), including Master Mode saves. Switch and Tears of the Kingdom support are on the roadmap — see README.",
+  "main": "electron/main.js",
+  "scripts": {
+    "lint": "eslint assets/js/zelda-botw.js server/server.js server/state.js server/test.js",
+    "format": "prettier --write assets/js/zelda-botw.js server/server.js server/state.js server/test.js assets/css/",
+    "format:check": "prettier --check assets/js/zelda-botw.js server/server.js server/state.js server/test.js assets/css/",
+    "build:windows": "node scripts/convert-icon.js && electron-builder --win --publish never",
+    "test:server": "node --test server/validate-save.test.js"
+  },
+  "build": {
+    "appId": "com.hyrule-hud.hyrule-hud",
+    "productName": "Hyrule HUD",
+    "executableName": "hyrule-hud",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "server/server.js",
+      "server/state.js",
+      "server/test.js",
+      "server/validate-save.js",
+      "assets/**/*",
+      "index.html",
+      "favicon.png",
+      "favicon.ico",
+      "package.json",
+      "package-lock.json",
+      "node_modules/**/*"
+    ],
+    "copyright": "Copyright © 2026 Hyrule HUD contributors",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "favicon.ico",
+      "artifactName": "BotW-Live-Savegame-Monitor-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": false,
+      "shortcutName": "Hyrule HUD",
+      "include": "electron/installer.nsh",
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true,
+      "installerIcon": "favicon.ico",
+      "uninstallerIcon": "favicon.ico",
+      "installerHeaderIcon": "favicon.ico"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "YOUR_GITHUB_USERNAME",
+      "repo": "hyrule-hud"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_GITHUB_USERNAME/hyrule-hud.git"
+  },
+  "keywords": ["zelda", "botw", "totk", "speedrun", "completionist", "cemu", "savegame", "minimap"],
+  "author": "YOUR_GITHUB_USERNAME",
+  "license": "MIT",
+  "type": "commonjs",
+  "packageManager": "bun@1.3.11",
+  "bugs": {
+    "url": "https://github.com/YOUR_GITHUB_USERNAME/hyrule-hud/issues"
+  },
+  "homepage": "https://github.com/YOUR_GITHUB_USERNAME/hyrule-hud#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.4.0",
+    "png-to-ico": "^3.0.1",
+    "prettier": "^3.8.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "express": "^5.2.1"
+  }
+}

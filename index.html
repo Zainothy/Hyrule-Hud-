@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Savegame Viewer &ndash; The legend of Zelda: Breath of the wild</title>
+	<meta http-equiv="content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="description" content="A savegame viewer for The legend of Zelda: Breath of the wild for unexplored Map Locations and hidden Koroks."/>
+	<meta name="keywords" content="html5, savegame, save, editor, hack, exploit, wii u, zelda, breath of the wild, botw, map, korok"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+	<link rel="shortcut icon" href="./favicon.png"/>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+	<link type="text/css" rel="stylesheet" href="./assets/css/zelda-botw.css" media="all"/>
+	<script type="text/javascript" src="./assets/js/savegame-editor.js"></script>
+	<script type="text/javascript" src="./assets/js/api-client.js"></script>
+	<script type="text/javascript" src="./assets/js/zelda-botw.js"></script>
+	<script type="text/javascript" src="./assets/js/map-locations.js"></script>
+	<script type="text/javascript" src="./assets/js/map-regions.js"></script>
+	<script type="text/javascript" src="./assets/js/save-slots.js"></script>
+	<!-- <script type="text/javascript" src="./zelda-botw.hashes.js"></script> -->
+</head>
+<body>
+
+<div id="test-banner"></div>
+
+<div id="save-error-banner" style="display:none">
+    <span id="save-error-message"></span>
+    <button id="save-error-reconfigure-btn" style="display:none">Reconfigure…</button>
+    <button id="save-error-dismiss-btn">✕</button>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+	<div id="header-top">
+		<div id="header-row" class="padding-vertical">
+			<h1>Hyrule HUD <span class="hh-tagline">— live save monitor</span></h1>
+			<div class="header-buttons">
+				<span id="app-version" class="app-version"></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="toolbar" class="hidden">
+	<div id="map-stats-section">
+		<div class="toolbar-section-title">Map Stats<span class="section-toggle-indicator"> ▾</span></div>
+		<label for="span-number-koroks" data-type="korok"><span class="stat-label-text">Korok Seeds</span>
+			<span class="legend-bar dot-korok"></span>
+			<span class="stat-value"><span id="span-number-koroks"></span><span id="span-number-total-koroks">/900</span></span>
+		</label>
+		<label for="span-number-locations" data-type="location"><span class="stat-label-text">Locations<br><span class="stat-subtitle">(Not Visited)</span></span>
+			<span class="legend-bar dot-location"></span>
+			<span class="stat-value"><span id="span-number-locations"></span>/<span id="span-number-total-locations"></span></span>
+		</label>
+		<label for="span-number-locations-visited" data-type="location-discovered"><span class="stat-label-text">Locations<br><span class="stat-subtitle">(Visited)</span></span>
+			<span class="legend-bar dot-location-discovered"></span>
+			<span class="stat-value"><span id="span-number-locations-visited"></span>/<span id="span-number-total-locations-visited"></span></span>
+		</label>
+		<label for="span-number-shrines-not-activated" data-type="shrine-not-activated"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Not Activated)</span></span>
+			<span class="legend-bar dot-shrine-not-activated"></span>
+			<span class="stat-value"><span id="span-number-shrines-not-activated"></span>/<span id="span-number-total-shrines-not-activated"></span></span>
+		</label>
+		<label for="span-number-shrines" data-type="shrine"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Activated)</span></span>
+			<span class="legend-bar dot-shrine"></span>
+			<span class="stat-value"><span id="span-number-shrines"></span>/<span id="span-number-total-shrines"></span></span>
+		</label>
+		<label for="span-number-shrines-completed" data-type="shrine-completed"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Completed)</span></span>
+			<span class="legend-bar dot-shrine-completed"></span>
+			<span class="stat-value"><span id="span-number-shrines-completed"></span>/<span id="span-number-total-shrines-completed"></span></span>
+		</label>
+		<label for="span-number-towers" data-type="tower"><span class="stat-label-text">Towers</span>
+			<span class="legend-bar dot-tower"></span>
+			<span class="stat-value"><span id="span-number-towers"></span>/<span id="span-number-total-towers"></span></span>
+		</label>
+		<label for="span-number-divine-beasts-incomplete" data-type="divine-beast"><span class="stat-label-text">Divine Beasts<br><span class="stat-subtitle">(Incomplete)</span></span>
+			<span class="legend-bar dot-divine-beast"></span>
+			<span class="stat-value"><span id="span-number-divine-beasts-incomplete"></span>/<span id="span-number-total-divine-beasts-incomplete"></span></span>
+		</label>
+		<label for="span-number-divine-beasts-completed" data-type="divine-beast-completed"><span class="stat-label-text">Divine Beasts<br><span class="stat-subtitle">(Completed)</span></span>
+			<span class="legend-bar dot-divine-beast-completed"></span>
+			<span class="stat-value"><span id="span-number-divine-beasts-completed"></span>/<span id="span-number-total-divine-beasts-completed"></span></span>
+		</label>
+	</div>
+	<div id="save-slot-section">
+		<div class="toolbar-section-title">Save Slot</div>
+		<select id="save-slot-select">
+			<option value="auto">Auto (most recent)</option>
+		</select>
+	</div>
+	<div id="track-player-row" data-tracking="false">Track Player</div>
+	<label data-type="player-position"><span class="stat-label-text">Player Position</span>
+		<span class="legend-bar dot-player-position"></span>
+	</label>
+	<div id="track-zoom-row">
+		<input type="range" id="track-zoom-slider" min="5" max="90" value="15" step="1">
+	</div>
+	<div id="services-section">
+		<div class="toolbar-section-title">Services<span class="section-toggle-indicator"> ▾</span></div>
+		<label data-service="hatago">Stable</label>
+		<label data-service="village">Village</label>
+		<label data-service="settlement">Settlement</label>
+		<label data-service="great_fairy">Great Fairy</label>
+		<label data-service="goddess">Goddess Statue</label>
+		<label data-service="yadoya">Inn</label>
+		<label data-service="shop_yorozu">General Store</label>
+		<label data-service="shop_bougu">Armor Shop</label>
+		<label data-service="shop_jewel">Jewelry Shop</label>
+	</div>
+	<div id="player-stats-section">
+		<div class="player-stats-title">Player Stats</div>
+		<div class="player-stat-row">
+			<span class="player-stat-label">Hearts</span>
+			<span class="player-stat-value" id="span-stat-hearts">&mdash;</span>
+		</div>
+		<div class="player-stat-row">
+			<span class="player-stat-label">Stamina</span>
+			<span class="player-stat-value" id="span-stat-stamina">&mdash;</span>
+		</div>
+		<div class="player-stat-row">
+			<span class="player-stat-label">Playtime</span>
+			<span class="player-stat-value" id="span-stat-playtime">&mdash;</span>
+		</div>
+		<div class="player-stat-row">
+			<span class="player-stat-label">Rupees</span>
+			<span class="player-stat-value" id="span-stat-rupees">&mdash;</span>
+		</div>
+		<div class="player-stat-row">
+			<span class="player-stat-label">Motorcycle</span>
+			<span class="motorcycle-light not-owned" id="stat-motorcycle-light"></span>
+		</div>
+	</div>
+	<div id="server-status">
+		<span id="save-timestamp-label">Last Update:</span>
+		<div id="timestamp-row">
+			<span id="save-timestamp"></span>
+			<span id="server-status-dot" class="server-status-dot offline"></span>
+		</div>
+	</div>
+</div>
+
+
+<!-- THE EDITOR -->
+<div id="the-editor" class="wrapper hidden">
+	<!-- DEBUG -->
+	<div id="debug"></div>
+
+	<div id="map-viewport">
+		<div id="zoom-label"></div>
+		<div id="map-container">
+			<img src='./assets/images/BotW-Map.png'/>
+			<svg id="path-svg">
+					<defs>
+					<marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth" viewBox="0 0 20 20">
+						<path d="M0,0 L0,6 L9,3 Z" fill="lime" stroke="green" stroke-width="1" />
+					</marker>
+					</defs>
+				<g id="path-group" fill="none" stroke="#ffffff" stroke-width="3" marker-start="url(#arrow)"</g>
+			</svg>
+		</div>
+	</div>
+	
+</div>
+
+
+<script>
+(function () {
+	window.BotWApi.get('/api/version').then(function (response) {
+		if (response && response.ok && response.version) {
+			var versionEl = document.getElementById('app-version');
+			if (versionEl) {
+				versionEl.textContent = ' v' + response.version;
+			}
+		}
+	});
+})();
+</script>
+
+</body>
+</html>
