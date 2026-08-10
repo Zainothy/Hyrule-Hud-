@@ -9,8 +9,9 @@
 	<link rel="shortcut icon" href="./favicon.png"/>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 	<link type="text/css" rel="stylesheet" href="./assets/css/zelda-botw.css" media="all"/>
+	<link type="text/css" rel="stylesheet" href="./assets/css/hyrule-hud-theme.css" media="all"/>
 	<script type="text/javascript" src="./assets/js/savegame-editor.js"></script>
 	<script type="text/javascript" src="./assets/js/api-client.js"></script>
 	<script type="text/javascript" src="./assets/js/zelda-botw.js"></script>
@@ -33,6 +34,7 @@
 <div id="header">
 	<div id="header-top">
 		<div id="header-row" class="padding-vertical">
+			<button id="sidebar-toggle-btn" aria-label="Toggle sidebar" aria-expanded="false">☰</button>
 			<h1>Hyrule HUD <span class="hh-tagline">— live save monitor</span></h1>
 			<div class="header-buttons">
 				<span id="app-version" class="app-version"></span>
@@ -171,6 +173,17 @@
 				versionEl.textContent = ' v' + response.version;
 			}
 		}
+	});
+})();
+
+// Mobile sidebar toggle — only relevant under the 900px breakpoint where
+// hyrule-hud-theme.css turns the sidebar into an off-canvas drawer.
+(function () {
+	var btn = document.getElementById('sidebar-toggle-btn');
+	if (!btn) return;
+	btn.addEventListener('click', function () {
+		var open = document.body.classList.toggle('sidebar-open');
+		btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 	});
 })();
 </script>
