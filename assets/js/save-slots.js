@@ -28,6 +28,14 @@
         }
         if (!data || !data.ok) return;
 
+        // Re-tint the whole UI (cyan -> crimson) when the active slot is
+        // Master Mode, so the mode is legible at a glance, not just in
+        // the dropdown text.
+        const active = data.pinnedSlot != null
+            ? data.slots.find((s) => s.index === data.pinnedSlot)
+            : data.slots[0];
+        document.body.classList.toggle('mode-master', !!active && active.mode === 'master');
+
         const prevValue = select.value;
         select.innerHTML = '';
 
