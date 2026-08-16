@@ -7,7 +7,7 @@ renderer, and the original Docker/Electron packaging all originate there.
 
 Credit, per the upstream README:
 
-- **Marc Robledo** — [savegame-editors](https://github.com/marcrobledo/savegame-editors), the original save-parsing logic this is all descended from (MIT).
+- **Marc Robledo** — [savegame-editors](https://github.com/marcrobledo/savegame-editors), the original save-parsing logic this is all descended from (MIT). Also the direct source of the Hinox/Talus/Molduga hash list and coordinate table used for the boss-tracking feature (`assets/js/map-enemies.js`), taken from that repo's `zelda-botw.data.js` and `zelda-botw.locations.js`.
 - **Eric Defore / d4mation** — [botw-unexplored-viewer](https://github.com/d4mation/botw-unexplored-viewer), the map overlay foundation.
 - **MrCheeze** — [botw-waypoint-map](https://github.com/MrCheeze/botw-waypoint-map) and [botw-tools](https://github.com/MrCheeze/botw-tools) datamining research.
 - **xanderphillips** — the live-monitor / state-API / Electron packaging fork this project builds on directly.

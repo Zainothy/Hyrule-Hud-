@@ -637,6 +637,15 @@ body.test-mode #test-banner {
 #toolbar label[data-type='divine-beast-completed']::before {
     background: #00cc44;
 }
+#toolbar label[data-type='hinox-defeated']::before {
+    background: #6b6b6b;
+}
+#toolbar label[data-type='talus-defeated']::before {
+    background: #6b6b6b;
+}
+#toolbar label[data-type='molduga-defeated']::before {
+    background: #6b6b6b;
+}
 #toolbar label[data-type='player-position']::before {
     background: #ffffff;
     border-radius: 50%;
@@ -1406,7 +1415,13 @@ button.no-text.with-icon:before {
 #map-container .waypoint.shrine-completed,
 #map-container .waypoint.tower,
 #map-container .waypoint.labo,
-#map-container .waypoint.location-discovered {
+#map-container .waypoint.location-discovered,
+#map-container .waypoint.hinox,
+#map-container .waypoint.hinox-defeated,
+#map-container .waypoint.talus,
+#map-container .waypoint.talus-defeated,
+#map-container .waypoint.molduga,
+#map-container .waypoint.molduga-defeated {
     background-color: transparent;
     border: none;
     border-radius: 2px;
@@ -1440,6 +1455,39 @@ button.no-text.with-icon:before {
     background-image: url('../icons/mapicon_dungeon.svg');
     box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #ff5555;
     background-size: 160%;
+}
+/* Hinox / Talus / Molduga — not-defeated in full color, defeated reuses the
+   same icon (grayscale + dimmed) rather than a second asset, matching the
+   "crossed off a checklist" visual language elsewhere in the app. */
+#map-container .waypoint.hinox {
+    background-image: url('../icons/mapicon_hinox.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #d4c9a8;
+}
+#map-container .waypoint.hinox-defeated {
+    background-image: url('../icons/mapicon_hinox.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #6b6b6b;
+    filter: grayscale(0.85) brightness(0.7);
+    opacity: 0.4;
+}
+#map-container .waypoint.talus {
+    background-image: url('../icons/mapicon_talus.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #8a7d6b;
+}
+#map-container .waypoint.talus-defeated {
+    background-image: url('../icons/mapicon_talus.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #6b6b6b;
+    filter: grayscale(0.85) brightness(0.7);
+    opacity: 0.4;
+}
+#map-container .waypoint.molduga {
+    background-image: url('../icons/mapicon_molduga.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #c9915a;
+}
+#map-container .waypoint.molduga-defeated {
+    background-image: url('../icons/mapicon_molduga.svg');
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #6b6b6b;
+    filter: grayscale(0.85) brightness(0.7);
+    opacity: 0.4;
 }
 #map-container .waypoint.tower {
     background-image: url('../icons/mapicon_tower.svg');

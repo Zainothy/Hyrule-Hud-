@@ -350,6 +350,39 @@ SavegameEditor = {
         this.markMap(_incompleteDivineBeasts, 'divine-beast');
         this.markMap(_completedDivineBeasts, 'divine-beast-completed');
 
+        // Hinox / Talus / Molduga — split defeated vs. not-defeated, both shown
+        // on the map (same pattern as divine beasts), unlike koroks/shrines
+        // where the found/completed side just disappears. Hash list and
+        // coordinates are sourced from marcrobledo/savegame-editors — see
+        // map-enemies.js and Findings.md for provenance.
+        var _splitByDefeated = function (hashObject) {
+            var defeated = {},
+                remaining = {};
+            for (var _h in hashObject) {
+                var _entry = _saveHashMap[_h];
+                if (_entry && _entry.value) {
+                    defeated[_h] = hashObject[_h];
+                } else {
+                    remaining[_h] = hashObject[_h];
+                }
+            }
+            return { defeated: defeated, remaining: remaining };
+        };
+        var _hinoxSplit = _splitByDefeated(hinoxLocations);
+        var _talusSplit = _splitByDefeated(talusLocations);
+        var _moldugaSplit = _splitByDefeated(moldugaLocations);
+        this.markMap(_hinoxSplit.remaining, 'hinox');
+        this.markMap(_hinoxSplit.defeated, 'hinox-defeated');
+        this.markMap(_talusSplit.remaining, 'talus');
+        this.markMap(_talusSplit.defeated, 'talus-defeated');
+        this.markMap(_moldugaSplit.remaining, 'molduga');
+        this.markMap(_moldugaSplit.defeated, 'molduga-defeated');
+        renderEnemyStats(
+            Object.keys(_hinoxSplit.defeated).length,
+            Object.keys(_talusSplit.defeated).length,
+            Object.keys(_moldugaSplit.defeated).length
+        );
+
         this.markMap(labos, 'labo');
         this.markMap(remainingWarps, 'warp');
         this.markMap(locationValues.notFound.koroks, 'korok');
@@ -1476,7 +1509,13 @@ function showWaypointTooltip(waypoint) {
         waypoint.classList.contains('tower') ||
         waypoint.classList.contains('korok') ||
         waypoint.classList.contains('labo') ||
-        waypoint.classList.contains('location-discovered');
+        waypoint.classList.contains('location-discovered') ||
+        waypoint.classList.contains('hinox') ||
+        waypoint.classList.contains('hinox-defeated') ||
+        waypoint.classList.contains('talus') ||
+        waypoint.classList.contains('talus-defeated') ||
+        waypoint.classList.contains('molduga') ||
+        waypoint.classList.contains('molduga-defeated');
 
     var scale =
         parseFloat(
@@ -1583,6 +1622,22 @@ function renderStats(
     setValue('span-number-total-divine-beasts-incomplete', totalDivineBeasts);
     setValue('span-number-divine-beasts-completed', divineBeastsCompletedCount);
     setValue('span-number-total-divine-beasts-completed', totalDivineBeasts);
+}
+
+// Hinox/Talus/Molduga totals are just the length of their hash-keyed data
+// objects (map-enemies.js) — no separate "total" constant needed since the
+// full location list is always present, unlike shrines/towers which track
+// totals separately from what's currently rendered.
+function renderEnemyStats(hinoxDefeated, talusDefeated, moldugaDefeated) {
+    setValue('span-number-hinox-defeated', hinoxDefeated);
+    setValue('span-number-total-hinox', Object.keys(hinoxLocations).length);
+    setValue('span-number-talus-defeated', talusDefeated);
+    setValue('span-number-total-talus', Object.keys(talusLocations).length);
+    setValue('span-number-molduga-defeated', moldugaDefeated);
+    setValue(
+        'span-number-total-molduga',
+        Object.keys(moldugaLocations).length
+    );
 }
 
 // Remove all Waypoints
