@@ -1375,22 +1375,31 @@ button.no-text.with-icon:before {
     position: relative;
 }
 
-/* Base waypoint — circle (Koroks and Locations) */
+/* Base waypoint — circle (Koroks and Locations).
+   Sized off --hh-icon-size (hyrule-hud-theme.css) and counter-scaled against
+   --map-scale so it holds a constant on-screen size at any zoom level — same
+   idiom the tooltip and region labels already use. */
 #map-container .waypoint {
     position: absolute;
     background: orange;
-    border: 1px solid red;
+    border: calc(1px / var(--map-scale, 1)) solid red;
     color: red;
-    width: 10px;
-    height: 10px;
+    width: calc(var(--hh-icon-size, 14px) / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) / var(--map-scale, 1));
     font-size: 0;
     border-radius: 50%;
-    transform: translate(-5px, -5px);
+    transform: translate(
+        calc(var(--hh-icon-half, 7px) * -1 / var(--map-scale, 1)),
+        calc(var(--hh-icon-half, 7px) * -1 / var(--map-scale, 1))
+    );
 }
 #map-container .waypoint.location {
     opacity: 0.625;
 }
-/* SVG/PNG icon waypoints — shared base */
+/* SVG/PNG icon waypoints — shared base. Same counter-scale treatment as the
+   base .waypoint circle above. background-size stays a percentage so the
+   160%-zoomed icons below (dungeon/tower/labo glyphs, which have padding
+   baked into their viewBox) keep the same proportion at the new size. */
 #map-container .waypoint.korok,
 #map-container .waypoint.shrine,
 #map-container .waypoint.shrine-not-activated,
@@ -1401,57 +1410,60 @@ button.no-text.with-icon:before {
     background-color: transparent;
     border: none;
     border-radius: 2px;
-    width: 10px;
-    height: 10px;
+    width: calc(var(--hh-icon-size, 14px) / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) / var(--map-scale, 1));
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(-5px, -5px);
+    transform: translate(
+        calc(var(--hh-icon-half, 7px) * -1 / var(--map-scale, 1)),
+        calc(var(--hh-icon-half, 7px) * -1 / var(--map-scale, 1))
+    );
     opacity: 0.625;
 }
 /* Colored rounded border ring matching sidebar — no filter, icons stay original colors */
 #map-container .waypoint.korok {
     background-image: url('../icons/mapicon_korok.png');
-    box-shadow: 0 0 0 1px #c6b96f;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #c6b96f;
 }
 #map-container .waypoint.shrine {
     background-image: url('../icons/mapicon_dungeon.svg');
-    box-shadow: 0 0 0 1px #00ffff;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #00ffff;
     background-size: 160%;
 }
 #map-container .waypoint.shrine-completed {
     background-image: url('../icons/mapicon_dungeon_dlc.svg');
-    box-shadow: 0 0 0 1px #ffff00;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #ffff00;
     background-size: 160%;
 }
 #map-container .waypoint.shrine-not-activated {
     background-image: url('../icons/mapicon_dungeon.svg');
-    box-shadow: 0 0 0 1px #ff5555;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #ff5555;
     background-size: 160%;
 }
 #map-container .waypoint.tower {
     background-image: url('../icons/mapicon_tower.svg');
-    box-shadow: 0 0 0 1px #cc00ff;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #cc00ff;
     background-size: 160%;
 }
 #map-container .waypoint.labo {
     background-image: url('../icons/mapicon_labo.svg');
-    box-shadow: 0 0 0 1px #ff9900;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #ff9900;
     background-size: 160%;
 }
 
 /* Settlement / Great Fairy / Goddess Statue map icons */
 #map-container .waypoint.location-discovered[data-location-type='settlement'] {
     background-image: url('../icons/mapicon_checkpoint.svg');
-    box-shadow: 0 0 0 1px #cc9966;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #cc9966;
 }
 #map-container .waypoint.location-discovered[data-location-type='great_fairy'] {
     background-image: url('../icons/mapicon_checkpoint.svg');
-    box-shadow: 0 0 0 1px #ff66bb;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #ff66bb;
 }
 #map-container .waypoint.location-discovered[data-location-type='goddess'] {
     background-image: url('../icons/mapicon_checkpoint.svg');
-    box-shadow: 0 0 0 1px #c9a959;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #c9a959;
 }
 
 /* Services sidebar section */
@@ -1495,7 +1507,7 @@ button.no-text.with-icon:before {
 /* Discovered location icons — teal border, original icon colors */
 #map-container .waypoint.location-discovered {
     background-image: url('../icons/mapicon_checkpoint.svg');
-    box-shadow: 0 0 0 1px #00ffaa;
+    box-shadow: 0 0 0 calc(1px / var(--map-scale, 1)) #00ffaa;
 }
 #map-container .waypoint.location-discovered[data-location-type='hatago'] {
     background-image: url('../icons/mapicon_hatago.svg');
@@ -1525,40 +1537,53 @@ button.no-text.with-icon:before {
     background-image: url('../icons/mapicon_shop_yadoya.svg');
 }
 
-/* Diamond waypoints — Divine Beasts, Warps */
+/* Diamond waypoints — Divine Beasts, Warps.
+   Shape/position is shared (width/height inherit from the counter-scaled base
+   .waypoint rule above); only fill/border/text color differ per state. The
+   -0.2x nudge and rotation are what turn the square into a diamond visually
+   centered on its anchor point — see Findings.md for the geometry this was
+   derived from. Kept as a ratio of --hh-icon-size (not a fixed px value) so
+   it stays correctly proportioned if the base icon size ever changes, and
+   divided by --map-scale for the same reason every other icon dimension is. */
+#map-container .waypoint.divine-beast,
+#map-container .waypoint.divine-beast-completed,
+#map-container .waypoint.warp {
+    border-radius: 0;
+    transform: translate(
+            calc(var(--hh-icon-size, 14px) * -0.2 / var(--map-scale, 1)),
+            0px
+        )
+        rotate(45deg);
+    transform-origin: top right;
+}
 #map-container .waypoint.divine-beast {
     background: #ff2200;
-    border: 1px solid #990000;
+    border: calc(1px / var(--map-scale, 1)) solid #990000;
     color: #990000;
-    border-radius: 0;
-    transform: translate(-2px, 0px) rotate(45deg);
-    transform-origin: top right;
 }
 #map-container .waypoint.divine-beast-completed {
     background: #00cc44;
-    border: 1px solid #006622;
+    border: calc(1px / var(--map-scale, 1)) solid #006622;
     color: #006622;
-    border-radius: 0;
-    transform: translate(-2px, 0px) rotate(45deg);
-    transform-origin: top right;
 }
 #map-container .waypoint.warp {
     background: cyan;
-    border: 1px solid blue;
+    border: calc(1px / var(--map-scale, 1)) solid blue;
     color: blue;
-    border-radius: 0;
-    transform: translate(-2px, 0px) rotate(45deg);
-    transform-origin: top right;
 }
 
-/* Player position — glowing white circle */
+/* Player position — glowing white circle. Own literal size (not tied to
+   --hh-icon-size — this marker is intentionally distinct from the icon
+   family) but counter-scaled the same way so it doesn't shrink to nothing
+   zoomed out either. Glow radii left untouched deliberately — a soft glow
+   is forgiving of some size drift with zoom, unlike a crisp icon or edge. */
 #map-container .waypoint.player-position {
     background: #ffffff;
-    border: 2px solid rgba(200, 200, 200, 0.7);
-    width: 14px;
-    height: 14px;
+    border: calc(2px / var(--map-scale, 1)) solid rgba(200, 200, 200, 0.7);
+    width: calc(14px / var(--map-scale, 1));
+    height: calc(14px / var(--map-scale, 1));
     border-radius: 50%;
-    transform: translate(-7px, -7px);
+    transform: translate(calc(-7px / var(--map-scale, 1)), calc(-7px / var(--map-scale, 1)));
     box-shadow:
         0 0 10px 4px rgba(255, 255, 255, 0.7),
         0 0 20px 6px rgba(255, 255, 255, 0.3);

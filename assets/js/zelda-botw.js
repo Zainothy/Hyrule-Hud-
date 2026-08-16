@@ -1451,10 +1451,18 @@ function showWaypointTooltip(waypoint) {
         document.getElementById('map-container').appendChild(_waypointTooltip);
     }
 
-    // Waypoint left/top are the map-coordinate anchor point.
-    // Circles: transform: translate(-5px,-5px) — visual center is at (left, top)
-    // Diamonds: transform: translate(-2px,0) rotate(45deg) around top-right —
-    //   rightmost visual tip is at approx (left+8.6, top-1.4) in map coords.
+    // Waypoint left/top are the map-coordinate anchor point. Icon size is
+    // counter-scaled to hold a constant on-screen size at any zoom (see
+    // --hh-icon-size in hyrule-hud-theme.css), which means their footprint
+    // in map-space now varies with scale — every offset below divides by
+    // `scale` for the same reason GAP already did.
+    // Circles/icons: transform: translate(-half,-half) — visual center is at (left, top)
+    // Diamonds: transform: translate(-0.2*size,0) rotate(45deg) around top-right —
+    //   rightmost visual tip is at approx (left + 0.86*size, top - 0.14*size).
+    //   (0.86 and -0.14 are the original 10px-box derivation — 8.6px and
+    //   -1.4px — expressed as a ratio of size so they stay correct if
+    //   --hh-icon-size ever changes; see Findings.md for the rotation
+    //   geometry this comes from.)
     var L = parseFloat(waypoint.style.left) || 0;
     var T = parseFloat(waypoint.style.top) || 0;
     var isDiamond =
@@ -1476,17 +1484,26 @@ function showWaypointTooltip(waypoint) {
                 '--map-scale'
             )
         ) || 1;
+    var baseIconPx =
+        parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue(
+                '--hh-icon-size'
+            )
+        ) || 14; // reads the same token the CSS sizes icons off, so this can't drift out of sync
     var GAP = 10 / scale; // constant 10px gap in screen space, expressed in map coords
+    var ICON_HALF = baseIconPx / 2 / scale;
+    var DIAMOND_TIP_X = (baseIconPx * 0.86) / scale;
+    var DIAMOND_TIP_Y = (baseIconPx * -0.14) / scale;
 
     var tx, ty;
     if (isDiamond) {
-        tx = L + 8.6 + GAP; // start from right tip of diamond
-        ty = T - 1.4; // visual center y of diamond
+        tx = L + DIAMOND_TIP_X + GAP; // start from right tip of diamond
+        ty = T + DIAMOND_TIP_Y; // visual center y of diamond
     } else if (isIcon) {
-        tx = L + 5 + GAP; // start from right edge of 10px icon
+        tx = L + ICON_HALF + GAP; // start from right edge of icon
         ty = T;
     } else {
-        tx = L + 5 + GAP; // start from right edge of circle (radius 5)
+        tx = L + ICON_HALF + GAP; // start from right edge of circle
         ty = T; // visual center y of circle
     }
 

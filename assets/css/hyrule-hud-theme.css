@@ -26,6 +26,20 @@
     --hh-gap: 14px;
     --hh-mono: 'JetBrains Mono', 'Share Tech Mono', ui-monospace, monospace;
 
+    /* Base on-screen size for map waypoint icons (koroks, shrines, towers,
+       divine beasts, etc). zelda-botw.css counter-scales every waypoint
+       against --map-scale using this value, so icons hold a constant
+       screen size at any zoom instead of shrinking to a few px when
+       zoomed out — same idiom already used for the waypoint tooltip and
+       region labels. --hh-icon-half is just half of it, kept as its own
+       token since several rules need it for centering transforms — update
+       both together if this ever changes. showWaypointTooltip() in
+       zelda-botw.js reads --hh-icon-size directly at runtime, so tooltip
+       anchoring re-derives itself automatically and can't drift out of
+       sync with the CSS. */
+    --hh-icon-size: 14px;
+    --hh-icon-half: 7px;
+
     /* Master Mode accent (Blood Moon crimson). Toggled in by
        save-slots.js adding .mode-master to <body> when the active
        slot is a Master Mode save. */
