@@ -922,30 +922,23 @@ body.test-mode #test-banner {
 }
 #tracking-panel {
     margin: 0;
-    border: 1px solid rgba(201, 169, 89, 0.18);
-    border-radius: 6px;
-    overflow: hidden;
-    background:
-        linear-gradient(180deg, rgba(12, 22, 35, 0.88), rgba(8, 15, 25, 0.82)),
-        rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    overflow: visible;
+    background: transparent;
     font-family: 'Noto Sans', sans-serif;
 }
 #track-player-row {
     appearance: none;
     width: 100%;
-    min-height: 32px;
+    min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 7px 11px;
+    padding: 4px;
     border: 0;
-    border-bottom: 1px solid rgba(201, 169, 89, 0.14);
+    border-radius: 6px;
     color: #f1d98f;
-    background:
-        linear-gradient(180deg, rgba(201, 169, 89, 0.09), rgba(201, 169, 89, 0.03)),
-        rgba(9, 18, 29, 0.76);
+    background: transparent;
     cursor: pointer;
     font-family: inherit;
     font-size: 11px;
@@ -954,6 +947,9 @@ body.test-mode #test-banner {
     letter-spacing: 0;
     text-transform: none;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+}
+#track-player-row:hover {
+    background: rgba(255, 255, 255, 0.04);
 }
 .control-title {
     min-width: 0;
@@ -987,22 +983,22 @@ body.test-mode #test-banner {
 }
 .tracking-inline-controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
     align-items: center;
-    padding: 8px 11px 9px;
+    padding: 2px 4px 0;
 }
 #player-marker-toggle {
     appearance: none;
     order: 2;
-    width: auto;
-    min-height: 24px;
+    width: 100%;
+    min-height: 22px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 5px;
+    justify-content: space-between;
+    gap: 8px;
     margin: 0;
-    padding: 0;
+    padding: 2px 0;
     border: 0;
     color: var(--botw-gold-light);
     background: transparent;
@@ -1010,13 +1006,14 @@ body.test-mode #test-banner {
     font-family: inherit;
     font-size: 10px;
     font-weight: 700;
-    text-align: center;
+    text-align: left;
 }
 #player-marker-toggle:hover {
     color: var(--botw-text-muted);
 }
 .marker-toggle-indicator {
     position: relative;
+    order: 2;
     flex: 0 0 20px;
     width: 20px;
     height: 11px;
@@ -1046,6 +1043,7 @@ body.test-mode #test-banner {
     background: #19d6ff;
 }
 .marker-toggle-text {
+    order: 1;
     margin-left: 0;
     font-size: 10px;
     font-weight: 600;
@@ -1061,24 +1059,41 @@ body.test-mode #test-banner {
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
     font-family: inherit;
     font-size: 10px;
     color: var(--botw-text-muted);
     letter-spacing: 0;
     text-transform: none;
 }
-#track-zoom-label span {
+#tracking-panel #track-zoom-label span,
+#tracking-panel label#track-zoom-label span {
     font-family: inherit;
     font-size: inherit;
     font-weight: 600;
     color: inherit;
     text-shadow: none;
+    white-space: nowrap;
 }
-#track-zoom-label #track-zoom-value {
+#tracking-panel #track-zoom-label span,
+#tracking-panel label#track-zoom-label span {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--botw-text-muted);
+    letter-spacing: 0;
+    text-transform: none;
+    text-shadow: none;
+}
+#track-zoom-label #track-zoom-value,
+#tracking-panel label#track-zoom-label #track-zoom-value {
     font-family: 'JetBrains Mono', monospace;
     color: var(--botw-gold);
     font-variant-numeric: tabular-nums;
+}
+#tracking-panel #track-zoom-label #track-zoom-value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--botw-gold);
 }
 #track-zoom-slider {
     width: 100%;

@@ -123,18 +123,15 @@ body {
    wrapper in charge so the control does not visually leak outside its bounds. */
 #toolbar > #tracking-panel {
     flex: 0 0 auto;
-    padding: 0;
-    overflow: hidden;
+    padding: 10px 12px;
+    overflow: visible;
 }
 #tracking-panel #track-player-row {
     margin: 0;
     border: 0;
-    border-bottom: 1px solid rgba(201, 169, 89, 0.14);
-    border-radius: 0;
-    padding: 7px 11px;
-    background:
-        linear-gradient(180deg, rgba(201, 169, 89, 0.09), rgba(201, 169, 89, 0.03)),
-        rgba(9, 18, 29, 0.76);
+    border-radius: 6px;
+    padding: 4px;
+    background: transparent;
 }
 #tracking-panel #player-marker-toggle {
     margin: 0;
@@ -149,6 +146,13 @@ body {
     border-radius: 0;
     padding: 0;
     background: transparent;
+}
+#tracking-panel .toolbar-section-title,
+#save-slot-section .toolbar-section-title {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
 /* ---------------------------------------------------------------- */
@@ -224,8 +228,10 @@ body {
     color: var(--botw-text);
     border: 1px solid var(--hh-border-strong);
     font: inherit;
-    font-family: var(--hh-mono);
-    font-size: 0.85em;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 0.86em;
+    font-weight: 600;
+    text-align: left;
     cursor: pointer;
 }
 #save-slot-select:focus-visible {
