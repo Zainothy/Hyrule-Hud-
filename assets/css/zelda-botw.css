@@ -1831,7 +1831,10 @@ button.no-text.with-icon:before {
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
     -webkit-mask-size: contain;
-    opacity: 0.86;
+    mask-mode: alpha;
+    opacity: 0.94;
+    filter: drop-shadow(0 0 calc(3px / var(--map-scale, 1)) rgba(0, 0, 0, 0.85))
+        drop-shadow(0 0 calc(5px / var(--map-scale, 1)) currentColor);
 }
 #map-container .waypoint[data-divine-beast='naboris'] {
     --divine-beast-mask: url('../icons/mapicon_divine_beast_naboris.png');
@@ -1847,9 +1850,11 @@ button.no-text.with-icon:before {
 }
 #map-container .waypoint.divine-beast {
     background-color: #ff6a21;
+    color: #ff6a21;
 }
 #map-container .waypoint.divine-beast-completed {
     background-color: #35d777;
+    color: #35d777;
 }
 #map-container .waypoint.shrine,
 #map-container .waypoint.shrine-completed,
@@ -1863,15 +1868,16 @@ button.no-text.with-icon:before {
 }
 #map-container .waypoint.divine-beast,
 #map-container .waypoint.divine-beast-completed {
-    width: calc(var(--hh-icon-size, 14px) * 1.55 / var(--map-scale, 1));
-    height: calc(var(--hh-icon-size, 14px) * 1.55 / var(--map-scale, 1));
+    width: calc(var(--hh-icon-size, 14px) * 3 / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) * 3 / var(--map-scale, 1));
     transform: translate(
-        calc(var(--hh-icon-size, 14px) * -0.775 / var(--map-scale, 1)),
-        calc(var(--hh-icon-size, 14px) * -0.775 / var(--map-scale, 1))
+        calc(var(--hh-icon-size, 14px) * -1.5 / var(--map-scale, 1)),
+        calc(var(--hh-icon-size, 14px) * -1.5 / var(--map-scale, 1))
     );
 }
 #map-container .waypoint.location#Location_StartPoint,
-#map-container .waypoint.location-discovered#Location_StartPoint {
+#map-container .waypoint.location-discovered#Location_StartPoint,
+#map-container .waypoint.shrine-resurrection {
     background-color: transparent;
     border: none;
     background-image: url('../icons/mapicon_shrine_resurrection.svg');
@@ -1879,13 +1885,15 @@ button.no-text.with-icon:before {
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 2px;
-    width: calc(var(--hh-icon-size, 14px) * 1.35 / var(--map-scale, 1));
-    height: calc(var(--hh-icon-size, 14px) * 1.35 / var(--map-scale, 1));
+    width: calc(var(--hh-icon-size, 14px) * 2.4 / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) * 2.4 / var(--map-scale, 1));
     transform: translate(
-        calc(var(--hh-icon-size, 14px) * -0.675 / var(--map-scale, 1)),
-        calc(var(--hh-icon-size, 14px) * -0.675 / var(--map-scale, 1))
+        calc(var(--hh-icon-size, 14px) * -1.2 / var(--map-scale, 1)),
+        calc(var(--hh-icon-size, 14px) * -1.2 / var(--map-scale, 1))
     );
-    opacity: 0.88;
+    opacity: 0.96;
+    filter: drop-shadow(0 0 calc(3px / var(--map-scale, 1)) rgba(0, 0, 0, 0.85))
+        drop-shadow(0 0 calc(4px / var(--map-scale, 1)) rgba(18, 215, 255, 0.9));
 }
 /* Hinox / Talus / Molduga — not-defeated in full color, defeated reuses the
    same icon (grayscale + dimmed) rather than a second asset, matching the
@@ -2037,6 +2045,24 @@ button.no-text.with-icon:before {
     background: cyan;
     border: calc(1px / var(--map-scale, 1)) solid blue;
     color: blue;
+}
+#map-container .waypoint.warp.shrine-resurrection {
+    background-color: transparent;
+    border: none;
+    border-radius: 2px;
+    background-image: url('../icons/mapicon_shrine_resurrection.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: calc(var(--hh-icon-size, 14px) * 2.4 / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) * 2.4 / var(--map-scale, 1));
+    transform: translate(
+        calc(var(--hh-icon-size, 14px) * -1.2 / var(--map-scale, 1)),
+        calc(var(--hh-icon-size, 14px) * -1.2 / var(--map-scale, 1))
+    );
+    opacity: 0.96;
+    filter: drop-shadow(0 0 calc(3px / var(--map-scale, 1)) rgba(0, 0, 0, 0.85))
+        drop-shadow(0 0 calc(4px / var(--map-scale, 1)) rgba(18, 215, 255, 0.9));
 }
 
 /* Player position — glowing white circle. Own literal size (not tied to

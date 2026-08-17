@@ -525,6 +525,8 @@ SavegameEditor = {
         var fragment = document.createDocumentFragment();
 
         for (var internal_name in mapObjects) {
+            var mapObject = mapObjects[internal_name];
+            var markerName = mapObject.internal_name || internal_name;
             var waypoint = document.createElement('div');
 
             waypoint.classList.add('waypoint');
@@ -532,26 +534,29 @@ SavegameEditor = {
             waypoint.setAttribute(
                 'style',
                 'left: ' +
-                    (3000 + mapObjects[internal_name].x / 2) +
+                    (3000 + mapObject.x / 2) +
                     'px' +
                     '; top: ' +
-                    (2500 + mapObjects[internal_name].y / 2) +
+                    (2500 + mapObject.y / 2) +
                     'px'
             );
-            waypoint.id = internal_name;
+            waypoint.id = markerName;
             waypoint.setAttribute(
                 'data-display_name',
-                mapObjects[internal_name].display_name
+                mapObject.display_name
             );
             var divineBeastType = {
                 Location_RemainsElectric: 'naboris',
                 Location_RemainsFire: 'rudania',
                 Location_RemainsWater: 'ruta',
                 Location_RemainsWind: 'medoh'
-            }[internal_name];
+            }[markerName];
             if (divineBeastType) {
                 waypoint.setAttribute('data-divine-beast', divineBeastType);
                 waypoint.classList.add('divine-beast-' + divineBeastType);
+            }
+            if (markerName === 'Location_StartPoint') {
+                waypoint.classList.add('shrine-resurrection');
             }
 
             fragment.appendChild(waypoint);
