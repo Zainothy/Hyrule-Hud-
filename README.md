@@ -1,140 +1,156 @@
 # Hyrule HUD
 
-A power-user live save monitor and minimap, built for completionists and
-speedrunners — not just casual progress-tracking.
+Hyrule HUD is a live save monitor and minimap power tool for Zelda: Breath of the Wild players who care about completion, routing, and speedrun-friendly map state.
 
-It reads your emulator's save files directly (no mods, no plugins, no game
-modification) and renders live completion stats, player position, and route
-info in the browser, updating automatically whenever you save.
+It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a local browser/Electron UI.
 
-> **Status:** early fork, actively being reshaped. BotW on Cemu (Wii U) works
-> today, including Master Mode. Everything else below is roadmap — see
-> [Roadmap](#roadmap).
+> Current release: **v0.2.0 / Phase 1 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. Download the Windows installer from [the v0.2.0 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.0).
 
-Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor)
-and the save-tooling lineage behind it. Full credit in [NOTICE.md](./NOTICE.md).
+Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor) and the save-tooling lineage behind it. Full credit is kept in [NOTICE.md](./NOTICE.md).
 
----
+## Current Support
 
-## What changed vs. upstream
+| Game | Platform | Status |
+|---|---|---|
+| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.0 |
+| Breath of the Wild | Switch save format | Roadmap |
+| Tears of the Kingdom | Switch save format | Roadmap |
 
-The upstream project only scanned Cemu save slots `0`–`5`. BotW's own
-on-disk convention is actually **`0`–`7`**: slots `0`–`5` are Normal Mode
-(0 manual, 1–5 auto-saves), and slots `6`–`7` are reserved for **Master
-Mode**. Because upstream hardcoded the range to 6 slots, any Master Mode
-playthrough was structurally invisible to it — not a config problem, a range
-bug.
+## Phase 1 Highlights
 
-Fixed here:
+- Eight-slot Cemu save detection: slots `0`-`5` for Normal Mode and slots `6`-`7` for Master Mode.
+- Save Slot picker with Auto mode and manual slot pinning.
+- Cemu title-root resolution: the app accepts a direct profile folder or a title root containing `user/<profile>/0..7`.
+- Live player stats, completion counters, player position, and Master Mode tint.
+- Stable on-screen minimap icon sizing through zoom-aware counter-scaling.
+- Shrine state dropdown: `All States`, `Unactivated`, `Activated`, `Completed`.
+- Shrine state colors: unactivated orange, activated blue/orange, completed blue.
+- Per-beast Divine Beast iconography and a dedicated Shrine of Resurrection icon.
+- Collapsed Map Stats groups for Locations, Divine Beasts, and Mini-Bosses.
+- Clean tracking controls for Auto-follow, Marker visibility, and Follow zoom.
 
-- Slot scanning now covers all 8 slots, Normal and Master Mode alike.
-- A **manual save-slot picker** in the sidebar (`Save Slot` dropdown) lets
-  you pin the viewer to a specific slot instead of trusting
-  "most recently modified" auto-detection — the thing upstream had no way
-  to do at all.
-- New `GET /api/slots` and `PATCH /api/state/pinned-slot` endpoints so this
-  is scriptable too.
+## Install
 
----
+### Windows App
 
-## Roadmap
+1. Download `Hyrule-HUD-Setup-0.2.0.exe` from [the latest Phase 1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.0).
+2. Run the installer.
+3. In setup, choose your BotW Cemu save folder.
 
-The end goal is a genuine swiss-army-knife minimap: one tool, multiple
-games, multiple platforms, built for people who care about routing and
-splits, not just "did I find this shrine yet."
+Valid save-folder shapes include:
 
-- [x] BotW — Cemu (Wii U), Normal + Master Mode
-- [ ] BotW — Switch (Yuzu/Ryujinx/real console via extracted save)
-- [ ] Tears of the Kingdom support (different save format entirely — separate
-      parser, not a copy-paste of the BotW one)
-- [ ] Auto-splits / timer integration (LiveSplit-compatible) on shrines,
-      towers, Divine Beast defeats
-- [ ] Route/pathing helper — nearest unclaimed korok or shrine from current
-      position
-- [ ] Session stats — koroks/hour, IGT vs RTA drift, run comparison
-- [ ] Clean stream-safe overlay layout, separate from the full power-user
-      sidebar
-- [ ] Restyled UI pass (current UI is still visually upstream's; functional
-      but not the "clean" look this project is aiming for yet)
-
-Switch and TotK support are separate, real reverse-engineering efforts
-(different save encryption/format, not a config change) — they're tracked as
-GitHub issues rather than promised on a timeline. Contributions welcome.
-
----
-
-## Setup
-
-### Docker (recommended for now)
-
-```
-cd server
-cp .env.example .env   # set SAVE_PATH to your Cemu save root
-docker compose up -d --build
+```text
+C:\Emulators\Cemu\mlc01\usr\save\00050000\101c9500
+C:\Emulators\Cemu\mlc01\usr\save\00050000\101c9500\user\80000001
 ```
 
-`SAVE_PATH` should point at the save-profile root, e.g.:
+The first form is the BotW title root. The second form is the resolved Cemu profile root. Hyrule HUD can resolve either shape.
 
-```
-SAVE_PATH=/path/to/Cemu/mlc01/usr/save/00050000/101c9400/user/80000001
-```
+### Local Development
 
-(Not the `0/` subfolder — the container mounts slots `0`–`7` automatically.)
+```powershell
+npm install
+$env:STATIC_ROOT = (Get-Location).Path
+node server/server.js
+```
 
 Open `http://localhost:3000`.
 
-### Windows executable
+For real-save development checks through the server entry point, pass the save root through the launcher or `startServer(port, savePath)`. The packaged Electron app writes this as `SAVE_PATH_BASE` after setup.
 
-Same as upstream for now: `npm run build:windows` produces an installer via
-electron-builder. Auto-update/publish config points at a placeholder repo —
-update `package.json`'s `build.publish` and `author`/`repository` fields to
-your own GitHub username before building a release.
+### Build
 
----
+```powershell
+npm run test:server
+npm run lint
+npm run build:windows
+```
+
+`npm run build:windows` produces an NSIS installer in `dist/` with the artifact name `Hyrule-HUD-Setup-${version}.exe`.
 
 ## API
 
-### Live data feed
+### Live Data Feed
 
-```
+```http
 GET /api
 ```
 
-Returns current stats (koroks, shrines, towers, Divine Beasts, hearts,
-stamina, rupees, player position, etc.) as JSON — same shape as upstream,
-useful for stream overlays, Discord bots, or logging.
+Returns current save-derived stats such as koroks, locations, shrines, towers, Divine Beasts, hearts, stamina, rupees, playtime, motorcycle ownership, and player position.
 
-### Save slots
+### Save Slots
 
-```
+```http
 GET /api/slots
 ```
+
+Returns detected save slots, Normal/Master Mode labels, the configured path, the resolved path, and the active pinned slot.
 
 ```json
 {
   "ok": true,
+  "configuredPath": "C:\\Emulators\\Cemu\\mlc01\\usr\\save\\00050000\\101c9500",
+  "resolvedPath": "C:\\Emulators\\Cemu\\mlc01\\usr\\save\\00050000\\101c9500\\user\\80000001",
   "pinnedSlot": null,
   "slots": [
-    { "index": 0, "mode": "normal", "mtime": 1234567890 },
-    { "index": 6, "mode": "master", "mtime": 1234567999 }
+    { "index": 0, "mode": "normal", "mtimeMs": 1786900000000 },
+    { "index": 6, "mode": "master", "mtimeMs": 1786920000000 }
   ]
 }
 ```
 
-```
+```http
 PATCH /api/state/pinned-slot
-Body: { "slot": 6 }   // or { "slot": null } to go back to auto-detect
+Content-Type: application/json
+
+{ "slot": 6 }
 ```
 
-### Everything else
+Use `{ "slot": null }` to return to Auto mode.
 
-State API (map view, tracking, hidden types, dismissed waypoints) and the
-SSE event stream (`/api/events`) are unchanged from upstream — see inline
-comments in `server/server.js` for details while docs here catch up.
+### State And Events
 
----
+The server also exposes state endpoints for map view, hidden marker types, dismissed waypoints, tracking, marker visibility, shrine filtering, and Server-Sent Events at `/api/events`. See route definitions and inline OpenAPI metadata in [server/server.js](./server/server.js).
+
+## Map Rendering Status
+
+The marker layer has zoom-aware sizing, but the base map is currently a single `6000x5000` raster PNG at [assets/images/BotW-Map.png](./assets/images/BotW-Map.png). At high zoom, that base image can pixelate because the browser is enlarging a raster source.
+
+Phase 2 includes a rendering-quality investigation. The likely near-term path is a high-resolution tiled raster pyramid or hybrid raster base plus vector overlays. A true fully vectorized map depends on sourcing or generating reliable vector/topographic data; automatic raster-to-SVG tracing is unlikely to preserve the visual quality of the BotW map.
+
+## Roadmap
+
+### Phase 2 - Info Density And Map Rendering Quality
+
+- Always-on location labels using existing `display_name` metadata.
+- Zoom-aware label thresholds based on the current region-label and `--map-scale` patterns.
+- Generalized category filters for current save-derived entities.
+- Map rendering quality: evaluate tiled raster, hybrid vector overlays, and the feasibility of true vector source data.
+
+### Phase 3 - Search
+
+- Search by display name, internal id, and category.
+- Pan/zoom to results while preserving player-marker context.
+- Keep save-derived entities distinct from future static-reference entities.
+
+### Phase 4 - Session And Speedrun Tooling
+
+- LiveSplit-compatible route milestones.
+- Session stats such as koroks/hour and IGT/RTA drift.
+- Stream-safe overlay layout separate from the full power-user sidebar.
+- Route helper features such as nearest unclaimed korok or shrine.
+
+### Phase 5 - Platform Expansion
+
+- BotW Switch support.
+- Tears of the Kingdom support.
+- Parser/data research informed by upstream save-editor projects, with project-owned integration.
+
+### Phase 6 - Static Reference Data
+
+- Optional Zelda Dungeon-style static layers such as enemies, materials, armor, memories, shops, recipes, and broader reference data.
+- Clear UI and data boundaries between live save-derived state and static reference layers.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE) and [NOTICE.md](./NOTICE.md) for upstream
-attribution.
+MIT. See [LICENSE](./LICENSE) and [NOTICE.md](./NOTICE.md) for upstream attribution.
