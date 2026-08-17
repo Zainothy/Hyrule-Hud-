@@ -73,8 +73,8 @@ function readState() {
 }
 
 function writeState(patch) {
+    let current = readState();
     try {
-        const current = readState();
         const next = Object.assign({}, current, patch, {
             stateVersion: (current.stateVersion || 0) + 1,
             mapView: Object.assign({}, current.mapView, patch.mapView || {}),

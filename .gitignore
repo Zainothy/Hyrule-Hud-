@@ -8,6 +8,9 @@ server/data/
 server/style-example.html
 favicon.ico
 dist/
+dist-prod/
+dist-production/
+dist-*/
 docs/superpowers/
 .worktrees/
 .continue/

@@ -51,50 +51,85 @@
 			<span class="legend-bar dot-korok"></span>
 			<span class="stat-value"><span id="span-number-koroks"></span><span id="span-number-total-koroks">/900</span></span>
 		</label>
-		<label for="span-number-locations" data-type="location"><span class="stat-label-text">Locations<br><span class="stat-subtitle">(Not Visited)</span></span>
-			<span class="legend-bar dot-location"></span>
-			<span class="stat-value"><span id="span-number-locations"></span>/<span id="span-number-total-locations"></span></span>
-		</label>
-		<label for="span-number-locations-visited" data-type="location-discovered"><span class="stat-label-text">Locations<br><span class="stat-subtitle">(Visited)</span></span>
-			<span class="legend-bar dot-location-discovered"></span>
-			<span class="stat-value"><span id="span-number-locations-visited"></span>/<span id="span-number-total-locations-visited"></span></span>
-		</label>
-		<label for="span-number-shrines-not-activated" data-type="shrine-not-activated"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Not Activated)</span></span>
-			<span class="legend-bar dot-shrine-not-activated"></span>
-			<span class="stat-value"><span id="span-number-shrines-not-activated"></span>/<span id="span-number-total-shrines-not-activated"></span></span>
-		</label>
-		<label for="span-number-shrines" data-type="shrine"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Activated)</span></span>
-			<span class="legend-bar dot-shrine"></span>
-			<span class="stat-value"><span id="span-number-shrines"></span>/<span id="span-number-total-shrines"></span></span>
-		</label>
-		<label for="span-number-shrines-completed" data-type="shrine-completed"><span class="stat-label-text">Shrines<br><span class="stat-subtitle">(Completed)</span></span>
-			<span class="legend-bar dot-shrine-completed"></span>
-			<span class="stat-value"><span id="span-number-shrines-completed"></span>/<span id="span-number-total-shrines-completed"></span></span>
-		</label>
+		<details id="locations-filter-group" class="stat-collapse-group">
+			<summary>
+				<span class="filter-summary-main">
+					<span class="stat-dot dot-location"></span>
+					<span class="stat-label-text">Locations</span>
+				</span>
+				<span class="stat-value"><span id="span-number-locations-overview"></span>/<span id="span-number-total-locations-overview"></span></span>
+			</summary>
+			<label for="span-number-locations" data-type="location"><span class="stat-label-text">Not Visited</span>
+				<span class="legend-bar dot-location"></span>
+				<span class="stat-value"><span id="span-number-locations"></span>/<span id="span-number-total-locations"></span></span>
+			</label>
+			<label for="span-number-locations-visited" data-type="location-discovered"><span class="stat-label-text">Visited</span>
+				<span class="legend-bar dot-location-discovered"></span>
+				<span class="stat-value"><span id="span-number-locations-visited"></span>/<span id="span-number-total-locations-visited"></span></span>
+			</label>
+		</details>
+		<div id="shrine-filter-group" class="map-filter-group">
+			<div class="filter-summary-row">
+				<span class="filter-summary-main">
+					<span class="filter-summary-icon shrine-summary-icon"></span>
+					<span class="stat-label-text">Shrines</span>
+				</span>
+				<span class="stat-value"><span id="span-number-shrines-overview"></span>/<span id="span-number-total-shrines-overview"></span></span>
+			</div>
+			<select id="shrine-filter-select" aria-label="Shrine map filter">
+				<option value="all">All States</option>
+				<option value="shrine-not-activated">Unactivated</option>
+				<option value="shrine">Activated</option>
+				<option value="shrine-completed">Completed</option>
+			</select>
+			<span class="sr-only" id="shrine-count-bank">
+				<span id="span-number-shrines-not-activated"></span><span id="span-number-total-shrines-not-activated"></span>
+				<span id="span-number-shrines"></span><span id="span-number-total-shrines"></span>
+				<span id="span-number-shrines-completed"></span><span id="span-number-total-shrines-completed"></span>
+			</span>
+		</div>
 		<label for="span-number-towers" data-type="tower"><span class="stat-label-text">Towers</span>
 			<span class="legend-bar dot-tower"></span>
 			<span class="stat-value"><span id="span-number-towers"></span>/<span id="span-number-total-towers"></span></span>
 		</label>
-		<label for="span-number-divine-beasts-incomplete" data-type="divine-beast"><span class="stat-label-text">Divine Beasts<br><span class="stat-subtitle">(Incomplete)</span></span>
-			<span class="legend-bar dot-divine-beast"></span>
-			<span class="stat-value"><span id="span-number-divine-beasts-incomplete"></span>/<span id="span-number-total-divine-beasts-incomplete"></span></span>
-		</label>
-		<label for="span-number-divine-beasts-completed" data-type="divine-beast-completed"><span class="stat-label-text">Divine Beasts<br><span class="stat-subtitle">(Completed)</span></span>
-			<span class="legend-bar dot-divine-beast-completed"></span>
-			<span class="stat-value"><span id="span-number-divine-beasts-completed"></span>/<span id="span-number-total-divine-beasts-completed"></span></span>
-		</label>
-		<label for="span-number-hinox-defeated" data-type="hinox-defeated"><span class="stat-label-text">Hinox<br><span class="stat-subtitle">(Defeated)</span></span>
-			<span class="legend-bar dot-hinox-defeated"></span>
-			<span class="stat-value"><span id="span-number-hinox-defeated"></span>/<span id="span-number-total-hinox"></span></span>
-		</label>
-		<label for="span-number-talus-defeated" data-type="talus-defeated"><span class="stat-label-text">Talus<br><span class="stat-subtitle">(Defeated)</span></span>
-			<span class="legend-bar dot-talus-defeated"></span>
-			<span class="stat-value"><span id="span-number-talus-defeated"></span>/<span id="span-number-total-talus"></span></span>
-		</label>
-		<label for="span-number-molduga-defeated" data-type="molduga-defeated"><span class="stat-label-text">Molduga<br><span class="stat-subtitle">(Defeated)</span></span>
-			<span class="legend-bar dot-molduga-defeated"></span>
-			<span class="stat-value"><span id="span-number-molduga-defeated"></span>/<span id="span-number-total-molduga"></span></span>
-		</label>
+		<details id="divine-beasts-filter-group" class="stat-collapse-group">
+			<summary>
+				<span class="filter-summary-main">
+					<span class="stat-dot dot-divine-beast"></span>
+					<span class="stat-label-text">Divine Beasts</span>
+				</span>
+				<span class="stat-value"><span id="span-number-divine-beasts-overview"></span>/<span id="span-number-total-divine-beasts-overview"></span></span>
+			</summary>
+			<label for="span-number-divine-beasts-incomplete" data-type="divine-beast"><span class="stat-label-text">Incomplete</span>
+				<span class="legend-bar dot-divine-beast"></span>
+				<span class="stat-value"><span id="span-number-divine-beasts-incomplete"></span>/<span id="span-number-total-divine-beasts-incomplete"></span></span>
+			</label>
+			<label for="span-number-divine-beasts-completed" data-type="divine-beast-completed"><span class="stat-label-text">Completed</span>
+				<span class="legend-bar dot-divine-beast-completed"></span>
+				<span class="stat-value"><span id="span-number-divine-beasts-completed"></span>/<span id="span-number-total-divine-beasts-completed"></span></span>
+			</label>
+		</details>
+		<details id="miniboss-filter-group" class="stat-collapse-group">
+			<summary>
+				<span class="filter-summary-main">
+					<span class="stat-dot dot-miniboss"></span>
+					<span class="stat-label-text">Mini-Bosses</span>
+				</span>
+				<span class="stat-value"><span id="span-number-minibosses-defeated"></span>/<span id="span-number-total-minibosses"></span></span>
+			</summary>
+			<label for="span-number-hinox-defeated" data-type="hinox-defeated"><span class="stat-label-text">Hinox Defeated</span>
+				<span class="legend-bar dot-hinox-defeated"></span>
+				<span class="stat-value"><span id="span-number-hinox-defeated"></span>/<span id="span-number-total-hinox"></span></span>
+			</label>
+			<label for="span-number-talus-defeated" data-type="talus-defeated"><span class="stat-label-text">Talus Defeated</span>
+				<span class="legend-bar dot-talus-defeated"></span>
+				<span class="stat-value"><span id="span-number-talus-defeated"></span>/<span id="span-number-total-talus"></span></span>
+			</label>
+			<label for="span-number-molduga-defeated" data-type="molduga-defeated"><span class="stat-label-text">Molduga Defeated</span>
+				<span class="legend-bar dot-molduga-defeated"></span>
+				<span class="stat-value"><span id="span-number-molduga-defeated"></span>/<span id="span-number-total-molduga"></span></span>
+			</label>
+		</details>
 	</div>
 	<div id="save-slot-section">
 		<div class="toolbar-section-title">Save Slot</div>
@@ -102,12 +137,24 @@
 			<option value="auto">Auto (most recent)</option>
 		</select>
 	</div>
-	<div id="track-player-row" data-tracking="false">Track Player</div>
-	<label data-type="player-position"><span class="stat-label-text">Player Position</span>
-		<span class="legend-bar dot-player-position"></span>
-	</label>
-	<div id="track-zoom-row">
-		<input type="range" id="track-zoom-slider" min="5" max="90" value="15" step="1">
+	<div id="tracking-panel">
+		<button id="track-player-row" type="button" data-tracking="false">
+			<span class="control-title">Auto-follow</span>
+			<span class="tracking-state"><span class="tracking-state-dot"></span><span class="tracking-state-text">Off</span></span>
+		</button>
+		<div class="tracking-inline-controls">
+			<button id="player-marker-toggle" type="button" data-type="player-position" data-marker-visible="true" aria-pressed="true">
+				<span class="marker-toggle-indicator"></span>
+				<span class="marker-toggle-text">Marker</span>
+			</button>
+			<div id="track-zoom-row">
+				<label for="track-zoom-slider" id="track-zoom-label">
+					<span>Follow zoom</span>
+					<span id="track-zoom-value">15%</span>
+				</label>
+				<input type="range" id="track-zoom-slider" min="5" max="90" value="15" step="1">
+			</div>
+		</div>
 	</div>
 	<div id="services-section">
 		<div class="toolbar-section-title">Services<span class="section-toggle-indicator"> ▾</span></div>
@@ -169,7 +216,7 @@
 						<path d="M0,0 L0,6 L9,3 Z" fill="lime" stroke="green" stroke-width="1" />
 					</marker>
 					</defs>
-				<g id="path-group" fill="none" stroke="#ffffff" stroke-width="3" marker-start="url(#arrow)"</g>
+				<g id="path-group" fill="none" stroke="#ffffff" stroke-width="3" marker-start="url(#arrow)"></g>
 			</svg>
 		</div>
 	</div>

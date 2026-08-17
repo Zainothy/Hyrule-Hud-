@@ -4,14 +4,18 @@
 ; in package.json to avoid duplicate or icon-less shortcuts.
 
 !macro customInstall
-    IfFileExists "$DESKTOP\BotW Live Savegame Monitor.lnk" +2
-    CreateShortcut "$DESKTOP\BotW Live Savegame Monitor.lnk" "$INSTDIR\botw-ls-monitor.exe" "" "$INSTDIR\botw-ls-monitor.exe" 0
-    IfFileExists "$SMPROGRAMS\BotW Live Savegame Monitor.lnk" +2
-    CreateShortcut "$SMPROGRAMS\BotW Live Savegame Monitor.lnk" "$INSTDIR\botw-ls-monitor.exe" "" "$INSTDIR\botw-ls-monitor.exe" 0
+    Delete "$DESKTOP\BotW Live Savegame Monitor.lnk"
+    Delete "$SMPROGRAMS\BotW Live Savegame Monitor.lnk"
+    IfFileExists "$DESKTOP\Hyrule HUD.lnk" +2
+    CreateShortcut "$DESKTOP\Hyrule HUD.lnk" "$INSTDIR\Hyrule-HUD.exe" "" "$INSTDIR\Hyrule-HUD.exe" 0
+    IfFileExists "$SMPROGRAMS\Hyrule HUD.lnk" +2
+    CreateShortcut "$SMPROGRAMS\Hyrule HUD.lnk" "$INSTDIR\Hyrule-HUD.exe" "" "$INSTDIR\Hyrule-HUD.exe" 0
 !macroend
 
 !macro customUnInstall
     ${ifNot} ${isUpdated}
+        Delete "$DESKTOP\Hyrule HUD.lnk"
+        Delete "$SMPROGRAMS\Hyrule HUD.lnk"
         Delete "$DESKTOP\BotW Live Savegame Monitor.lnk"
         Delete "$SMPROGRAMS\BotW Live Savegame Monitor.lnk"
     ${endIf}

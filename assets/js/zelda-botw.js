@@ -17,6 +17,7 @@ var _saveHashMap = null;
 var _dismissedWaypoints = { koroks: new Set(), locations: new Set() };
 var _lastStateVersion = -1;
 var _prevAppliedState = null;
+var _lastHiddenTypes = [];
 
 var shrines = {};
 var towers = {};
@@ -542,6 +543,16 @@ SavegameEditor = {
                 'data-display_name',
                 mapObjects[internal_name].display_name
             );
+            var divineBeastType = {
+                Location_RemainsElectric: 'naboris',
+                Location_RemainsFire: 'rudania',
+                Location_RemainsWater: 'ruta',
+                Location_RemainsWind: 'medoh'
+            }[internal_name];
+            if (divineBeastType) {
+                waypoint.setAttribute('data-divine-beast', divineBeastType);
+                waypoint.classList.add('divine-beast-' + divineBeastType);
+            }
 
             fragment.appendChild(waypoint);
         }
@@ -593,7 +604,7 @@ function onScroll() {
     document.getElementById('header').style.top = window.scrollY > h ? '-' + h + 'px' : '0px';
 }
 
-var _saveErrorState = null; // null | 'not_found' | 'invalid' | 'parse_incomplete'
+var _saveErrorState = null; // null | 'not_found' | 'invalid' | 'parse_incomplete' | 'slots_unavailable'
 
 function showSaveError(type) {
     _saveErrorState = type;
@@ -610,6 +621,9 @@ function showSaveError(type) {
     } else if (type === 'parse_incomplete') {
         msg.textContent = 'Save file could not be fully parsed — critical game data is missing. The map may be incomplete.';
         if (btn) btn.style.display = 'none';
+    } else if (type === 'slots_unavailable') {
+        msg.textContent = 'Save slot list could not be loaded. The viewer will keep trying in the background.';
+        if (btn) btn.style.display = 'none';
     }
     banner.style.display = 'flex';
 }
@@ -619,6 +633,16 @@ function clearSaveError() {
     var banner = document.getElementById('save-error-banner');
     if (banner) banner.style.display = 'none';
 }
+
+window.HyruleHudSaveErrors = {
+    show: showSaveError,
+    clearIf: function (type) {
+        if (_saveErrorState === type) clearSaveError();
+    },
+    current: function () {
+        return _saveErrorState;
+    }
+};
 
 window.addEventListener(
     'load',
@@ -702,7 +726,15 @@ window.addEventListener(
 
         // Track Player toggle — click the row to enable/disable
         var trackPlayerRow = document.getElementById('track-player-row');
+        function updateTrackPlayerRowState(row) {
+            if (!row) return;
+            var isTracking = row.getAttribute('data-tracking') === 'true';
+            var text = row.querySelector('.tracking-state-text');
+            if (text) text.textContent = isTracking ? 'On' : 'Off';
+            row.setAttribute('aria-pressed', isTracking ? 'true' : 'false');
+        }
         if (trackPlayerRow) {
+            updateTrackPlayerRowState(trackPlayerRow);
             trackPlayerRow.addEventListener('click', function () {
                 var isTracking =
                     trackPlayerRow.getAttribute('data-tracking') === 'true';
@@ -711,17 +743,35 @@ window.addEventListener(
                     'data-tracking',
                     next ? 'true' : 'false'
                 );
+                updateTrackPlayerRowState(trackPlayerRow);
                 BotWApi.patch('/api/state/track-player', { enabled: next });
             });
         }
 
         // Track Player zoom slider — persist value via server API
         var trackZoomSlider = document.getElementById('track-zoom-slider');
+        var trackZoomValue = document.getElementById('track-zoom-value');
+        function updateTrackZoomValue() {
+            if (!trackZoomSlider || !trackZoomValue) return;
+            trackZoomValue.textContent =
+                Math.round(parseFloat(trackZoomSlider.value)) + '%';
+        }
         var _saveTrackZoom = BotWApi.debounce(function (zoom) {
             BotWApi.patch('/api/state/track-zoom', { zoom: zoom });
         }, 500);
+        function previewTrackZoom() {
+            if (!window._playerMapPos || !window.MapView) return;
+            window.MapView.centerOn(
+                window._playerMapPos.x,
+                window._playerMapPos.y,
+                window.MapView.getTrackZoom()
+            );
+        }
         if (trackZoomSlider) {
+            updateTrackZoomValue();
             trackZoomSlider.addEventListener('input', function () {
+                updateTrackZoomValue();
+                previewTrackZoom();
                 _saveTrackZoom(parseFloat(trackZoomSlider.value));
             });
         }
@@ -743,6 +793,7 @@ window.addEventListener(
         // restoreMapView=true: restore saved pan/zoom (only on initial page load).
         function applyState(s, applyToMap, restoreMapView) {
             if (!s) return;
+            _lastHiddenTypes = s.hiddenTypes || [];
 
             // Audio feedback — play a tone when specific state categories change
             var prev = _prevAppliedState;
@@ -831,6 +882,10 @@ window.addEventListener(
                                     locationValues.found.locations
                                 );
                                 setValue(
+                                    'span-number-locations-overview',
+                                    locationValues.found.locations
+                                );
+                                setValue(
                                     'span-number-locations',
                                     226 - locationValues.found.locations
                                 );
@@ -844,15 +899,18 @@ window.addEventListener(
 
             // Track player
             var row = document.getElementById('track-player-row');
-            if (row)
+            if (row) {
                 row.setAttribute(
                     'data-tracking',
                     s.trackPlayer ? 'true' : 'false'
                 );
+                updateTrackPlayerRowState(row);
+            }
 
             // Track zoom
             if (trackZoomSlider && s.trackZoom != null) {
                 trackZoomSlider.value = s.trackZoom;
+                updateTrackZoomValue();
                 // Re-center immediately when zoom changes while tracking is active
                 if (
                     row &&
@@ -905,16 +963,21 @@ window.addEventListener(
 
             // Hidden types
             [].forEach.call(
-                document.querySelectorAll('#toolbar label[data-type]'),
-                function (label) {
-                    var type = label.getAttribute('data-type');
+                document.querySelectorAll('#toolbar [data-type]'),
+                function (control) {
+                    var type = control.getAttribute('data-type');
                     if (s.hiddenTypes && s.hiddenTypes.indexOf(type) !== -1) {
-                        label.setAttribute('data-hidden', 'true');
+                        control.setAttribute('data-hidden', 'true');
                     } else {
-                        label.removeAttribute('data-hidden');
+                        control.removeAttribute('data-hidden');
                     }
                 }
             );
+            syncPlayerMarkerToggleState();
+            syncShrineFilterSelect(s.hiddenTypes || []);
+            if (applyToMap) {
+                applyShrineFilterFromHiddenTypes(s.hiddenTypes || []);
+            }
 
             // Hidden services
             [].forEach.call(
@@ -979,6 +1042,11 @@ window.addEventListener(
                         'span-number-locations-visited',
                         ov.locationsVisited
                     );
+                if (ov.locationsVisited != null)
+                    setValue(
+                        'span-number-locations-overview',
+                        ov.locationsVisited
+                    );
                 if (ov.shrines != null)
                     setValue('span-number-shrines', ov.shrines);
                 if (ov.shrinesCompleted != null)
@@ -986,6 +1054,8 @@ window.addEventListener(
                         'span-number-shrines-completed',
                         ov.shrinesCompleted
                     );
+                if (ov.shrinesCompleted != null)
+                    setValue('span-number-shrines-overview', ov.shrinesCompleted);
                 if (ov.shrinesNotActivated != null)
                     setValue(
                         'span-number-shrines-not-activated',
@@ -1001,6 +1071,11 @@ window.addEventListener(
                 if (ov.divineBeatsCompleted != null)
                     setValue(
                         'span-number-divine-beasts-completed',
+                        ov.divineBeatsCompleted
+                    );
+                if (ov.divineBeatsCompleted != null)
+                    setValue(
+                        'span-number-divine-beasts-overview',
                         ov.divineBeatsCompleted
                     );
             }
@@ -1039,6 +1114,8 @@ window.addEventListener(
         syncStateFromServer().then(function (s) {
             applyState(s, false, true);
             setupToolbarHover();
+            setupPlayerMarkerToggle();
+            setupShrineFilterSelect();
             setupServiceToggles();
             setupSectionHeadingToggles();
             updateSectionIndicators();
@@ -1267,6 +1344,98 @@ function initRegionLabels() {
 }
 
 // Toolbar label hover — highlight matching map icons
+function setWaypointTypeVisible(type, visible) {
+    [].forEach.call(
+        document.querySelectorAll('.waypoint.' + type),
+        function (wp) {
+            wp.style.display = visible ? '' : 'none';
+        }
+    );
+    if (type === 'korok') {
+        [].forEach.call(
+            document.querySelectorAll('#path-group .line'),
+            function (ln) {
+                ln.style.display = visible ? '' : 'none';
+            }
+        );
+    }
+}
+
+function syncPlayerMarkerToggleState() {
+    var toggle = document.getElementById('player-marker-toggle');
+    if (!toggle) return;
+    var hidden = toggle.getAttribute('data-hidden') === 'true';
+    toggle.setAttribute('data-marker-visible', hidden ? 'false' : 'true');
+    toggle.setAttribute('aria-pressed', hidden ? 'false' : 'true');
+    setWaypointTypeVisible('player-position', !hidden);
+}
+
+function setupPlayerMarkerToggle() {
+    var toggle = document.getElementById('player-marker-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', function () {
+        var isVisible = toggle.getAttribute('data-marker-visible') !== 'false';
+        var nextHidden = isVisible;
+        if (nextHidden) {
+            toggle.setAttribute('data-hidden', 'true');
+        } else {
+            toggle.removeAttribute('data-hidden');
+        }
+        syncPlayerMarkerToggleState();
+        BotWApi.patch('/api/state/hidden-types', {
+            type: 'player-position',
+            hidden: nextHidden
+        });
+    });
+    syncPlayerMarkerToggleState();
+}
+
+var SHRINE_FILTER_TYPES = [
+    'shrine-not-activated',
+    'shrine',
+    'shrine-completed'
+];
+
+function applyShrineFilter(filter, persist) {
+    var selected = filter === 'all' ? null : filter;
+    SHRINE_FILTER_TYPES.forEach(function (type) {
+        var visible = !selected || type === selected;
+        setWaypointTypeVisible(type, visible);
+        if (persist) {
+            BotWApi.patch('/api/state/hidden-types', {
+                type: type,
+                hidden: !visible
+            });
+        }
+    });
+}
+
+function syncShrineFilterSelect(hiddenTypes) {
+    var select = document.getElementById('shrine-filter-select');
+    if (!select) return;
+    var hidden = hiddenTypes || [];
+    var visibleTypes = SHRINE_FILTER_TYPES.filter(function (type) {
+        return hidden.indexOf(type) === -1;
+    });
+    select.value = visibleTypes.length === 1 ? visibleTypes[0] : 'all';
+}
+
+function applyShrineFilterFromHiddenTypes(hiddenTypes) {
+    var hidden = hiddenTypes || [];
+    SHRINE_FILTER_TYPES.forEach(function (type) {
+        setWaypointTypeVisible(type, hidden.indexOf(type) === -1);
+    });
+}
+
+function setupShrineFilterSelect() {
+    var select = document.getElementById('shrine-filter-select');
+    if (!select) return;
+    select.addEventListener('change', function () {
+        applyShrineFilter(select.value, true);
+        updateSectionIndicators();
+    });
+}
+
 function setupToolbarHover() {
     [].forEach.call(
         document.querySelectorAll('#toolbar label[data-type]'),
@@ -1297,40 +1466,14 @@ function setupToolbarHover() {
                         type: type,
                         hidden: false
                     });
-                    [].forEach.call(
-                        document.querySelectorAll('.waypoint.' + type),
-                        function (wp) {
-                            wp.style.display = '';
-                        }
-                    );
-                    if (type === 'korok') {
-                        [].forEach.call(
-                            document.querySelectorAll('#path-group .line'),
-                            function (ln) {
-                                ln.style.display = '';
-                            }
-                        );
-                    }
+                    setWaypointTypeVisible(type, true);
                 } else {
                     label.setAttribute('data-hidden', 'true');
                     BotWApi.patch('/api/state/hidden-types', {
                         type: type,
                         hidden: true
                     });
-                    [].forEach.call(
-                        document.querySelectorAll('.waypoint.' + type),
-                        function (wp) {
-                            wp.style.display = 'none';
-                        }
-                    );
-                    if (type === 'korok') {
-                        [].forEach.call(
-                            document.querySelectorAll('#path-group .line'),
-                            function (ln) {
-                                ln.style.display = 'none';
-                            }
-                        );
-                    }
+                    setWaypointTypeVisible(type, false);
                 }
             });
         }
@@ -1340,25 +1483,13 @@ function setupToolbarHover() {
 // Re-apply hidden states after waypoints are recreated on reload
 function applyHiddenStates() {
     [].forEach.call(
-        document.querySelectorAll('#toolbar label[data-hidden="true"]'),
-        function (label) {
-            var type = label.getAttribute('data-type');
-            [].forEach.call(
-                document.querySelectorAll('.waypoint.' + type),
-                function (wp) {
-                    wp.style.display = 'none';
-                }
-            );
-            if (type === 'korok') {
-                [].forEach.call(
-                    document.querySelectorAll('#path-group .line'),
-                    function (ln) {
-                        ln.style.display = 'none';
-                    }
-                );
-            }
+        document.querySelectorAll('#toolbar [data-type][data-hidden="true"]'),
+        function (control) {
+            setWaypointTypeVisible(control.getAttribute('data-type'), false);
         }
     );
+    applyShrineFilterFromHiddenTypes(_lastHiddenTypes);
+    syncPlayerMarkerToggleState();
 }
 
 // Service type toggles — sub-filters within location-discovered by data-location-type
@@ -1599,11 +1730,15 @@ function renderStats(
     setValue('span-number-total-locations', 226);
     setValue('span-number-locations-visited', locationValues.found.locations);
     setValue('span-number-total-locations-visited', 226);
+    setValue('span-number-locations-overview', locationValues.found.locations);
+    setValue('span-number-total-locations-overview', 226);
     setValue(
         'span-number-shrines',
         Math.max(0, locationValues.found.shrines - shrinesCompletedCount)
     );
     setValue('span-number-total-shrines', totalShrines);
+    setValue('span-number-shrines-overview', shrinesCompletedCount);
+    setValue('span-number-total-shrines-overview', totalShrineCompletions);
     setValue(
         'span-number-shrines-not-activated',
         locationValues.notFound.shrines
@@ -1622,6 +1757,8 @@ function renderStats(
     setValue('span-number-total-divine-beasts-incomplete', totalDivineBeasts);
     setValue('span-number-divine-beasts-completed', divineBeastsCompletedCount);
     setValue('span-number-total-divine-beasts-completed', totalDivineBeasts);
+    setValue('span-number-divine-beasts-overview', divineBeastsCompletedCount);
+    setValue('span-number-total-divine-beasts-overview', totalDivineBeasts);
 }
 
 // Hinox/Talus/Molduga totals are just the length of their hash-keyed data
@@ -1629,15 +1766,20 @@ function renderStats(
 // full location list is always present, unlike shrines/towers which track
 // totals separately from what's currently rendered.
 function renderEnemyStats(hinoxDefeated, talusDefeated, moldugaDefeated) {
+    var hinoxTotal = Object.keys(hinoxLocations).length;
+    var talusTotal = Object.keys(talusLocations).length;
+    var moldugaTotal = Object.keys(moldugaLocations).length;
     setValue('span-number-hinox-defeated', hinoxDefeated);
-    setValue('span-number-total-hinox', Object.keys(hinoxLocations).length);
+    setValue('span-number-total-hinox', hinoxTotal);
     setValue('span-number-talus-defeated', talusDefeated);
-    setValue('span-number-total-talus', Object.keys(talusLocations).length);
+    setValue('span-number-total-talus', talusTotal);
     setValue('span-number-molduga-defeated', moldugaDefeated);
+    setValue('span-number-total-molduga', moldugaTotal);
     setValue(
-        'span-number-total-molduga',
-        Object.keys(moldugaLocations).length
+        'span-number-minibosses-defeated',
+        hinoxDefeated + talusDefeated + moldugaDefeated
     );
+    setValue('span-number-total-minibosses', hinoxTotal + talusTotal + moldugaTotal);
 }
 
 // Remove all Waypoints
@@ -1665,6 +1807,7 @@ function placePlayerMarker(x, z, label) {
     marker.style.top = 2500 + z / 2 + 'px';
     marker.setAttribute('data-display_name', label || 'Player');
     map.appendChild(marker);
+    syncPlayerMarkerToggleState();
     // Store for Track Player feature
     window._playerMapPos = { x: 3000 + x / 2, y: 2500 + z / 2 };
 }
@@ -2151,7 +2294,10 @@ function setupSectionHeadingToggles() {
         'shrine-completed',
         'tower',
         'divine-beast',
-        'divine-beast-completed'
+        'divine-beast-completed',
+        'hinox-defeated',
+        'talus-defeated',
+        'molduga-defeated'
     ];
     var SERVICE_TYPES = [
         'hatago',
@@ -2189,26 +2335,28 @@ function setupSectionHeadingToggles() {
                 }
             });
 
-            // Sync map markers
-            [].forEach.call(labels, function (label) {
-                var typeAttr =
-                    label.getAttribute('data-type') ||
-                    label.getAttribute('data-service');
-                var wpSel = typeAttr
-                    ? label.getAttribute('data-type')
-                        ? '.waypoint.' + typeAttr
-                        : '.waypoint.location-discovered[data-location-type="' +
-                          typeAttr +
-                          '"]'
-                    : null;
-                if (!wpSel) return;
-                [].forEach.call(
-                    document.querySelectorAll(wpSel),
-                    function (wp) {
-                        wp.style.display = makeHidden ? 'none' : '';
-                    }
-                );
-            });
+            // Sync map markers. Types are driven from the canonical item list
+            // because the shrine filter is a single select, not three labels.
+            if (itemsKey === 'types') {
+                items.forEach(function (typeAttr) {
+                    setWaypointTypeVisible(typeAttr, !makeHidden);
+                });
+            } else {
+                [].forEach.call(labels, function (label) {
+                    var svcType = label.getAttribute('data-service');
+                    if (!svcType) return;
+                    [].forEach.call(
+                        document.querySelectorAll(
+                            '.waypoint.location-discovered[data-location-type="' +
+                                svcType +
+                                '"]'
+                        ),
+                        function (wp) {
+                            wp.style.display = makeHidden ? 'none' : '';
+                        }
+                    );
+                });
+            }
 
             // Special case: korok path lines follow the korok toggle
             if (itemsKey === 'types') {

@@ -9,64 +9,112 @@
 (function () {
     'use strict';
 
-    const select = document.getElementById('save-slot-select');
-    if (!select) return;
+    function initSaveSlots() {
+        const select = document.getElementById('save-slot-select');
+        if (!select) return;
 
-    function labelFor(slot) {
-        const modeLabel = slot.mode === 'master' ? 'Master Mode' : 'Normal Mode';
-        const kind = slot.index % 6 === 0 || slot.index === 6 ? 'Manual' : 'Auto';
-        return `Slot ${slot.index} — ${modeLabel} (${kind})`;
-    }
-
-    async function refresh() {
-        let data;
-        try {
-            const res = await fetch('/api/slots', { cache: 'no-store' });
-            data = await res.json();
-        } catch {
-            return; // server not reachable yet; try again next poll
+        function labelFor(slot) {
+            const modeLabel =
+                slot.mode === 'master' ? 'Master Mode' : 'Normal Mode';
+            const kind =
+                slot.index % 6 === 0 || slot.index === 6 ? 'Manual' : 'Auto';
+            return `Slot ${slot.index} — ${modeLabel} (${kind})`;
         }
-        if (!data || !data.ok) return;
 
-        // Re-tint the whole UI (cyan -> crimson) when the active slot is
-        // Master Mode, so the mode is legible at a glance, not just in
-        // the dropdown text.
-        const active = data.pinnedSlot != null
-            ? data.slots.find((s) => s.index === data.pinnedSlot)
-            : data.slots[0];
-        document.body.classList.toggle('mode-master', !!active && active.mode === 'master');
+        async function refresh() {
+            let data;
+            try {
+                const res = await fetch('/api/slots', { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                data = await res.json();
+            } catch {
+                if (window.HyruleHudSaveErrors) {
+                    window.HyruleHudSaveErrors.show('slots_unavailable');
+                }
+                return; // server not reachable yet; try again next poll
+            }
+            if (!data || !data.ok) {
+                if (window.HyruleHudSaveErrors) {
+                    window.HyruleHudSaveErrors.show('slots_unavailable');
+                }
+                return;
+            }
 
-        const prevValue = select.value;
-        select.innerHTML = '';
+            if (window.HyruleHudSaveErrors) {
+                window.HyruleHudSaveErrors.clearIf('slots_unavailable');
+            }
 
-        const autoOpt = document.createElement('option');
-        autoOpt.value = 'auto';
-        autoOpt.textContent = 'Auto (most recent)';
-        select.appendChild(autoOpt);
+            // Re-tint the whole UI (cyan -> crimson) when the active slot is
+            // Master Mode, so the mode is legible at a glance, not just in
+            // the dropdown text.
+            const active =
+                data.pinnedSlot != null
+                    ? data.slots.find((s) => s.index === data.pinnedSlot)
+                    : data.slots[0];
+            document.body.classList.toggle(
+                'mode-master',
+                !!active && active.mode === 'master'
+            );
 
-        data.slots.forEach((slot) => {
-            const opt = document.createElement('option');
-            opt.value = String(slot.index);
-            opt.textContent = labelFor(slot);
-            select.appendChild(opt);
+            const prevValue = select.value;
+            select.innerHTML = '';
+
+            const autoOpt = document.createElement('option');
+            autoOpt.value = 'auto';
+            autoOpt.textContent = 'Auto (most recent)';
+            select.appendChild(autoOpt);
+
+            data.slots.forEach((slot) => {
+                const opt = document.createElement('option');
+                opt.value = String(slot.index);
+                opt.textContent = labelFor(slot);
+                select.appendChild(opt);
+            });
+
+            if (data.slots.length === 0) {
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = 'empty';
+                emptyOpt.textContent = 'No save slots found';
+                emptyOpt.disabled = true;
+                select.appendChild(emptyOpt);
+            }
+
+            const target =
+                data.pinnedSlot != null ? String(data.pinnedSlot) : 'auto';
+            select.value = [...select.options].some((o) => o.value === target)
+                ? target
+                : prevValue || 'auto';
+        }
+
+        select.addEventListener('change', async () => {
+            const value = select.value;
+            if (value === 'empty') return;
+            const slot = value === 'auto' ? null : parseInt(value, 10);
+            try {
+                const res = await fetch('/api/state/pinned-slot', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slot })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (window.HyruleHudSaveErrors) {
+                    window.HyruleHudSaveErrors.clearIf('slots_unavailable');
+                }
+                await refresh();
+            } catch {
+                if (window.HyruleHudSaveErrors) {
+                    window.HyruleHudSaveErrors.show('slots_unavailable');
+                }
+            }
         });
 
-        const target = data.pinnedSlot != null ? String(data.pinnedSlot) : 'auto';
-        select.value = [...select.options].some((o) => o.value === target)
-            ? target
-            : prevValue || 'auto';
+        refresh();
+        setInterval(refresh, 10000);
     }
 
-    select.addEventListener('change', async () => {
-        const value = select.value;
-        const slot = value === 'auto' ? null : parseInt(value, 10);
-        await fetch('/api/state/pinned-slot', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slot })
-        });
-    });
-
-    refresh();
-    setInterval(refresh, 10000);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSaveSlots);
+    } else {
+        initSaveSlots();
+    }
 })();

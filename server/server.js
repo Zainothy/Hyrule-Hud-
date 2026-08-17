@@ -39,17 +39,75 @@ app.use(express.json());
 // The original upstream project only scanned 0–5, so any Master Mode
 // playthrough was invisible to it no matter which folder you pointed at.
 // When SAVE_PATH_BASE is set (Windows exe), slots are resolved as
-// <SAVE_PATH_BASE>/<i>/game_data.sav (matching Cemu's layout).
+// <SAVE_PATH_BASE>/<i>/game_data.sav. If the user selects the BotW title save
+// root instead (the folder containing user/<profile>/0..7), resolve it to the
+// most recently used profile folder before scanning slots.
 const TOTAL_SLOTS = 8;
 const MASTER_MODE_SLOTS = new Set([6, 7]);
 
-let _savePathBase = process.env.SAVE_PATH_BASE || null;
+let _configuredSavePathBase = process.env.SAVE_PATH_BASE || null;
+let _savePathBase = resolveSavePathBase(_configuredSavePathBase);
 
 let _reconfigureHandler = null;
 function registerReconfigureHandler(fn) { _reconfigureHandler = fn; }
 
 function slotMode(i) {
     return MASTER_MODE_SLOTS.has(i) ? 'master' : 'normal';
+}
+
+function hasSlotSaves(savePathBase) {
+    if (!savePathBase) return false;
+    return Array.from({ length: TOTAL_SLOTS }, (_, i) =>
+        path.join(savePathBase, String(i), 'game_data.sav')
+    ).some((filePath) => {
+        try {
+            return fs.statSync(filePath).isFile();
+        } catch {
+            return false;
+        }
+    });
+}
+
+function latestSlotMtime(savePathBase) {
+    let latest = 0;
+    for (let i = 0; i < TOTAL_SLOTS; i++) {
+        const filePath = path.join(savePathBase, String(i), 'game_data.sav');
+        try {
+            const stats = fs.statSync(filePath);
+            if (stats.isFile()) latest = Math.max(latest, stats.mtimeMs);
+        } catch {
+            /* slot missing */
+        }
+    }
+    return latest;
+}
+
+function findProfileSaveRoots(savePathBase) {
+    const userRoot = path.basename(savePathBase).toLowerCase() === 'user'
+        ? savePathBase
+        : path.join(savePathBase, 'user');
+    try {
+        return fs
+            .readdirSync(userRoot, { withFileTypes: true })
+            .filter((entry) => entry.isDirectory())
+            .map((entry) => path.join(userRoot, entry.name))
+            .filter(hasSlotSaves)
+            .map((profilePath) => ({
+                profilePath,
+                latestMtime: latestSlotMtime(profilePath)
+            }))
+            .sort((a, b) => b.latestMtime - a.latestMtime);
+    } catch {
+        return [];
+    }
+}
+
+function resolveSavePathBase(savePathBase) {
+    if (!savePathBase) return null;
+    const trimmed = savePathBase.trim();
+    if (hasSlotSaves(trimmed)) return trimmed;
+    const profiles = findProfileSaveRoots(trimmed);
+    return profiles.length > 0 ? profiles[0].profilePath : trimmed;
 }
 
 function getSaveSlots() {
@@ -163,6 +221,8 @@ app.get('/api/slots', (req, res) => {
         res.json({
             ok: true,
             pinnedSlot,
+            configuredPath: _configuredSavePathBase,
+            resolvedPath: _savePathBase,
             slots: slots.map((s) => ({
                 index: s.index,
                 mode: s.mode,
@@ -180,7 +240,8 @@ app.patch('/api/state/pinned-slot', (req, res) => {
         res.status(400).json({ ok: false, error: 'slot must be an integer 0-7 or null' });
         return;
     }
-    const state = writeState({ pinnedSlot: slot });
+    const state = writeStateAndBroadcast({ pinnedSlot: slot });
+    broadcastReloadSave();
     res.json({ ok: true, state });
 });
 
@@ -1252,7 +1313,8 @@ app.post('/api/test/run', async (req, res) => {
  * watcher is always null (no fs.watch in this server; included for interface consistency).
  */
 function startServer(port, savePath) {
-    _savePathBase = savePath;
+    _configuredSavePathBase = savePath;
+    _savePathBase = resolveSavePathBase(savePath);
     return new Promise((resolve, reject) => {
         const httpServer = app.listen(port, '0.0.0.0');
         httpServer.once('listening', () =>

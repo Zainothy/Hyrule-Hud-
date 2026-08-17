@@ -441,7 +441,7 @@ app.on("window-all-closed", () => {
 
 app.whenReady().then(async () => {
   app.setName("Hyrule HUD");
-  app.setAppUserModelId("com.Hyrule-Hud-.Hyrule-Hud-");
+  app.setAppUserModelId("com.zainothy.hyrulehud");
 
   // Kill any stale instances of this exe before proceeding
   killOtherInstances();

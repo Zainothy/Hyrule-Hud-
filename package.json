@@ -1,6 +1,6 @@
 {
   "name": "Hyrule-Hud-",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A power-user live save monitor and minimap for Zelda completionists and speedrunners. Reads your emulator save files directly (no mods, no plugins) and renders live completion progress, player position, and stats in the browser. Currently supports BotW on Cemu (Wii U), including Master Mode saves. Switch and Tears of the Kingdom support are on the roadmap — see README.",
   "main": "electron/main.js",
   "scripts": {
@@ -11,9 +11,9 @@
     "test:server": "node --test server/validate-save.test.js"
   },
   "build": {
-    "appId": "com.Hyrule-Hud-.Hyrule-Hud-",
+    "appId": "com.zainothy.hyrulehud",
     "productName": "Hyrule HUD",
-    "executableName": "Hyrule-Hud-",
+    "executableName": "Hyrule-HUD",
     "asar": false,
     "directories": {
       "output": "dist"
@@ -43,7 +43,7 @@
         }
       ],
       "icon": "favicon.ico",
-      "artifactName": "BotW-Live-Savegame-Monitor-Setup-${version}.${ext}"
+      "artifactName": "Hyrule-HUD-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -68,7 +68,16 @@
     "type": "git",
     "url": "git+https://github.com/Zainothy/Hyrule-Hud-.git"
   },
-  "keywords": ["zelda", "botw", "totk", "speedrun", "completionist", "cemu", "savegame", "minimap"],
+  "keywords": [
+    "zelda",
+    "botw",
+    "totk",
+    "speedrun",
+    "completionist",
+    "cemu",
+    "savegame",
+    "minimap"
+  ],
   "author": "Zainothy",
   "license": "MIT",
   "type": "commonjs",
