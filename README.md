@@ -4,7 +4,7 @@ Hyrule HUD is a live save monitor and minimap power tool for Zelda: Breath of th
 
 It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a local browser/Electron UI.
 
-> Current release: **v0.2.0 / Phase 1 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. Download the Windows installer from [the v0.2.0 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.0).
+> Current release: **v0.2.1 / Phase 1 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. Download the Windows installer from [the v0.2.1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.1).
 
 Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor) and the save-tooling lineage behind it. Full credit is kept in [NOTICE.md](./NOTICE.md).
 
@@ -12,7 +12,7 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 | Game | Platform | Status |
 |---|---|---|
-| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.0 |
+| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.1 |
 | Breath of the Wild | Switch save format | Roadmap |
 | Tears of the Kingdom | Switch save format | Roadmap |
 
@@ -33,7 +33,7 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 ### Windows App
 
-1. Download `Hyrule-HUD-Setup-0.2.0.exe` from [the latest Phase 1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.0).
+1. Download `Hyrule-HUD-Setup-0.2.1.exe` from [the latest Phase 1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.1).
 2. Run the installer.
 3. In setup, choose your BotW Cemu save folder.
 
