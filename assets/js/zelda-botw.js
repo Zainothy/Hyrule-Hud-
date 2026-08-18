@@ -323,8 +323,8 @@ SavegameEditor = {
         this.markMap(_completedShrinesMap, 'shrine-completed');
         this.markMap(towers, 'tower');
         this.markLabels(_discoveredShines, 'shrine');
-        this.markLabels(locationValues.notFound.shrines, 'shrine');
-        this.markLabels(_completedShrinesMap, 'shrine');
+        this.markLabels(locationValues.notFound.shrines, 'shrine-not-activated');
+        this.markLabels(_completedShrinesMap, 'shrine-completed');
         this.markLabels(towers, 'tower');
 
         // Split divine beasts: completed (green) vs. incomplete (red)
@@ -357,7 +357,7 @@ SavegameEditor = {
         this.markMap(_incompleteDivineBeasts, 'divine-beast');
         this.markMap(_completedDivineBeasts, 'divine-beast-completed');
         this.markLabels(_incompleteDivineBeasts, 'divine-beast');
-        this.markLabels(_completedDivineBeasts, 'divine-beast');
+        this.markLabels(_completedDivineBeasts, 'divine-beast-completed');
 
         // Hinox / Talus / Molduga — split defeated vs. not-defeated, both shown
         // on the map (same pattern as divine beasts), unlike koroks/shrines
@@ -387,11 +387,11 @@ SavegameEditor = {
         this.markMap(_moldugaSplit.remaining, 'molduga');
         this.markMap(_moldugaSplit.defeated, 'molduga-defeated');
         this.markLabels(_hinoxSplit.remaining, 'hinox');
-        this.markLabels(_hinoxSplit.defeated, 'hinox');
+        this.markLabels(_hinoxSplit.defeated, 'hinox-defeated');
         this.markLabels(_talusSplit.remaining, 'talus');
-        this.markLabels(_talusSplit.defeated, 'talus');
+        this.markLabels(_talusSplit.defeated, 'talus-defeated');
         this.markLabels(_moldugaSplit.remaining, 'molduga');
-        this.markLabels(_moldugaSplit.defeated, 'molduga');
+        this.markLabels(_moldugaSplit.defeated, 'molduga-defeated');
         renderEnemyStats(
             Object.keys(_hinoxSplit.defeated).length,
             Object.keys(_talusSplit.defeated).length,
@@ -591,9 +591,14 @@ SavegameEditor = {
         for (var internal_name in mapObjects) {
             var mapObject = mapObjects[internal_name];
             if (!mapObject.display_name) continue;
+            var markerName = mapObject.internal_name || internal_name;
             var label = document.createElement('div');
             label.className = 'poi-label poi-label-' + className;
             label.textContent = mapObject.display_name;
+            label.setAttribute('data-waypoint-id', markerName);
+            if (mapObject.location_type) {
+                label.setAttribute('data-location-type', mapObject.location_type);
+            }
             label.style.left = 3000 + mapObject.x / 2 + 'px';
             label.style.top = 2500 + mapObject.y / 2 + 'px';
             fragment.appendChild(label);
@@ -1315,15 +1320,28 @@ window.addEventListener(
                 locationValues.notFound.locations,
                 'location'
             );
+            SavegameEditor.markLabels(
+                locationValues.notFound.locations,
+                'location'
+            );
             SavegameEditor.markMap(shrines, 'shrine');
+            SavegameEditor.markLabels(shrines, 'shrine');
             SavegameEditor.markMap(
                 locationValues.notFound.shrines,
                 'shrine-not-activated'
             );
+            SavegameEditor.markLabels(
+                locationValues.notFound.shrines,
+                'shrine-not-activated'
+            );
             SavegameEditor.markMap(towers, 'tower');
+            SavegameEditor.markLabels(towers, 'tower');
             SavegameEditor.markMap(divineBeasts, 'divine-beast');
+            SavegameEditor.markLabels(divineBeasts, 'divine-beast');
             SavegameEditor.markMap(labos, 'labo');
+            SavegameEditor.markLabels(labos, 'labo');
             SavegameEditor.markMap(remainingWarps, 'warp');
+            SavegameEditor.markLabels(remainingWarps, 'warp');
             SavegameEditor.markMap(locationValues.notFound.koroks, 'korok');
 
             hide('dragzone');
@@ -1391,6 +1409,12 @@ function setWaypointTypeVisible(type, visible) {
         document.querySelectorAll('.waypoint.' + type),
         function (wp) {
             wp.style.display = visible ? '' : 'none';
+        }
+    );
+    [].forEach.call(
+        document.querySelectorAll('.poi-label-' + type),
+        function (label) {
+            label.style.display = visible ? '' : 'none';
         }
     );
     if (type === 'korok') {
@@ -1535,6 +1559,16 @@ function applyHiddenStates() {
 }
 
 // Service type toggles — sub-filters within location-discovered by data-location-type
+function getServiceMapSelector(svcType) {
+    return (
+        '.waypoint.location-discovered[data-location-type="' +
+        svcType +
+        '"], .poi-label-location-discovered[data-location-type="' +
+        svcType +
+        '"]'
+    );
+}
+
 function setupServiceToggles() {
     [].forEach.call(
         document.querySelectorAll('#services-section label[data-service]'),
@@ -1570,11 +1604,7 @@ function setupServiceToggles() {
                         hidden: false
                     });
                     [].forEach.call(
-                        document.querySelectorAll(
-                            '.waypoint.location-discovered[data-location-type="' +
-                                svcType +
-                                '"]'
-                        ),
+                        document.querySelectorAll(getServiceMapSelector(svcType)),
                         function (wp) {
                             wp.style.display = '';
                         }
@@ -1586,11 +1616,7 @@ function setupServiceToggles() {
                         hidden: true
                     });
                     [].forEach.call(
-                        document.querySelectorAll(
-                            '.waypoint.location-discovered[data-location-type="' +
-                                svcType +
-                                '"]'
-                        ),
+                        document.querySelectorAll(getServiceMapSelector(svcType)),
                         function (wp) {
                             wp.style.display = 'none';
                         }
@@ -1610,11 +1636,7 @@ function applyServiceHiddenStates() {
         function (label) {
             var svcType = label.getAttribute('data-service');
             [].forEach.call(
-                document.querySelectorAll(
-                    '.waypoint.location-discovered[data-location-type="' +
-                        svcType +
-                        '"]'
-                ),
+                document.querySelectorAll(getServiceMapSelector(svcType)),
                 function (wp) {
                     wp.style.display = 'none';
                 }
@@ -1749,6 +1771,11 @@ function removeWaypoint(element) {
     BotWApi.post('/api/state/dismissed', { type: apiType, name: element.id });
 
     element.remove();
+    [].forEach.call(document.querySelectorAll('.poi-label'), function (label) {
+        if (label.getAttribute('data-waypoint-id') === element.id) {
+            label.remove();
+        }
+    });
 
     if (type == 'koroks') {
         // Remove lines when necessary
@@ -2392,11 +2419,7 @@ function setupSectionHeadingToggles() {
                     var svcType = label.getAttribute('data-service');
                     if (!svcType) return;
                     [].forEach.call(
-                        document.querySelectorAll(
-                            '.waypoint.location-discovered[data-location-type="' +
-                                svcType +
-                                '"]'
-                        ),
+                        document.querySelectorAll(getServiceMapSelector(svcType)),
                         function (wp) {
                             wp.style.display = makeHidden ? 'none' : '';
                         }

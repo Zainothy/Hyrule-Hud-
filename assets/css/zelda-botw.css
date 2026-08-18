@@ -2203,7 +2203,8 @@ button.no-text.with-icon:before {
 .poi-label-shrine {
     color: rgba(255, 220, 160, 0.9);
 }
-.poi-label-divine-beast {
+.poi-label-divine-beast,
+.poi-label-divine-beast-completed {
     color: rgba(180, 255, 200, 0.92);
     font-weight: 600;
 }
@@ -2211,8 +2212,11 @@ button.no-text.with-icon:before {
     color: rgba(220, 180, 255, 0.88);
 }
 .poi-label-hinox,
+.poi-label-hinox-defeated,
 .poi-label-talus,
-.poi-label-molduga {
+.poi-label-talus-defeated,
+.poi-label-molduga,
+.poi-label-molduga-defeated {
     font-size: calc(10px / var(--map-scale, 1));
     color: rgba(255, 255, 255, 0.7);
 }
