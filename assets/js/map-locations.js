@@ -404,7 +404,7 @@ var korokPaths = {
     0x18f92f82: {"internal_name":"Location_RemainsElectric", "display_name":"Divine Beast Vah Naboris", "x":-2111.13, "y":2627.18},
     0x8ad5ef4a: {"internal_name":"Location_RemainsFire", "display_name":"Divine Beast Vah Rudania", "x":2537.27, "y":-2615.65},
     0x66336893: {"internal_name":"Location_RemainsWater", "display_name":"Divine Beast Vah Ruta", "x":2971.08, "y":233.382},
-    0xf300b27b: {"internal_name":"Location_RemainsWind", "display_name":"Divine Beast Vah Medoh", "x":-3620, "y":-2110},
+    0xf300b27b: {"internal_name":"Location_RemainsWind", "display_name":"Divine Beast Vah Medoh", "x":-3618.11, "y":-1807.61},
     0xe03f8aa7: {"internal_name":"Location_AncientLabo", "display_name":"Akkala Ancient Tech Lab", "x":4515.63, "y":-3164.53},
     0x704a8cee: {"internal_name":"Location_HatenoLabo", "display_name":"Hateno Ancient Tech Lab", "x":3778.63, "y":2125.7},
     };
