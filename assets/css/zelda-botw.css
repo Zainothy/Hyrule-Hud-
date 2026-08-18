@@ -2182,6 +2182,41 @@ button.no-text.with-icon:before {
 }
 
 /* Region name labels — positioned in map coordinates, scaled inversely so screen size stays constant */
+/* Phase 2a — always-on point-of-interest name labels. Same counter-scale
+   idiom as icons/tooltip/region-labels (calc(.. / var(--map-scale, 1))),
+   so no JS zoom-listener is needed just for sizing. Positioned below each
+   icon's anchor point via translate so it doesn't sit on top of the glyph. */
+.poi-label {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: calc(11px / var(--map-scale, 1));
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.9),
+        0 0 8px rgba(0, 0, 0, 0.6);
+    transform: translate(-50%, calc(11px / var(--map-scale, 1)));
+    z-index: 6;
+}
+.poi-label-shrine {
+    color: rgba(255, 220, 160, 0.9);
+}
+.poi-label-divine-beast {
+    color: rgba(180, 255, 200, 0.92);
+    font-weight: 600;
+}
+.poi-label-tower {
+    color: rgba(220, 180, 255, 0.88);
+}
+.poi-label-hinox,
+.poi-label-talus,
+.poi-label-molduga {
+    font-size: calc(10px / var(--map-scale, 1));
+    color: rgba(255, 255, 255, 0.7);
+}
+
 .region-label {
     position: absolute;
     pointer-events: none;

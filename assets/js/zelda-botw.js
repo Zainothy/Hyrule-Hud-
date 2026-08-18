@@ -260,6 +260,7 @@ SavegameEditor = {
         }
 
         this.markMap(locationValues.notFound.locations, 'location');
+        this.markLabels(locationValues.notFound.locations, 'location');
 
         // Derive discovered locations (all locations minus not-found) and mark them.
         // Assign a location_type based on internal_name for icon selection.
@@ -307,6 +308,7 @@ SavegameEditor = {
             }
         }
         this.markMap(discoveredLocations, 'location-discovered');
+        this.markLabels(discoveredLocations, 'location-discovered');
         // Set data-location-type on each discovered location waypoint for CSS icon selection
         for (var _dname in discoveredLocations) {
             var _el = document.getElementById(_dname);
@@ -320,6 +322,10 @@ SavegameEditor = {
         this.markMap(locationValues.notFound.shrines, 'shrine-not-activated');
         this.markMap(_completedShrinesMap, 'shrine-completed');
         this.markMap(towers, 'tower');
+        this.markLabels(_discoveredShines, 'shrine');
+        this.markLabels(locationValues.notFound.shrines, 'shrine');
+        this.markLabels(_completedShrinesMap, 'shrine');
+        this.markLabels(towers, 'tower');
 
         // Split divine beasts: completed (green) vs. incomplete (red)
         var _completedDivineBeasts = {},
@@ -350,6 +356,8 @@ SavegameEditor = {
         }
         this.markMap(_incompleteDivineBeasts, 'divine-beast');
         this.markMap(_completedDivineBeasts, 'divine-beast-completed');
+        this.markLabels(_incompleteDivineBeasts, 'divine-beast');
+        this.markLabels(_completedDivineBeasts, 'divine-beast');
 
         // Hinox / Talus / Molduga — split defeated vs. not-defeated, both shown
         // on the map (same pattern as divine beasts), unlike koroks/shrines
@@ -378,6 +386,12 @@ SavegameEditor = {
         this.markMap(_talusSplit.defeated, 'talus-defeated');
         this.markMap(_moldugaSplit.remaining, 'molduga');
         this.markMap(_moldugaSplit.defeated, 'molduga-defeated');
+        this.markLabels(_hinoxSplit.remaining, 'hinox');
+        this.markLabels(_hinoxSplit.defeated, 'hinox');
+        this.markLabels(_talusSplit.remaining, 'talus');
+        this.markLabels(_talusSplit.defeated, 'talus');
+        this.markLabels(_moldugaSplit.remaining, 'molduga');
+        this.markLabels(_moldugaSplit.defeated, 'molduga');
         renderEnemyStats(
             Object.keys(_hinoxSplit.defeated).length,
             Object.keys(_talusSplit.defeated).length,
@@ -560,6 +574,29 @@ SavegameEditor = {
             }
 
             fragment.appendChild(waypoint);
+        }
+
+        map.appendChild(fragment);
+    },
+
+    // Phase 2a — always-on point-of-interest name labels. Same coordinate
+    // transform as markMap() so labels line up exactly with their icon.
+    // Font size counter-scales via CSS (calc(.. / var(--map-scale,1))) —
+    // no JS zoom-listener needed, unlike region labels, since there's only
+    // one always-on tier for now (density tiers are Phase 2b).
+    markLabels(mapObjects, className) {
+        var map = document.getElementById('map-container');
+        var fragment = document.createDocumentFragment();
+
+        for (var internal_name in mapObjects) {
+            var mapObject = mapObjects[internal_name];
+            if (!mapObject.display_name) continue;
+            var label = document.createElement('div');
+            label.className = 'poi-label poi-label-' + className;
+            label.textContent = mapObject.display_name;
+            label.style.left = 3000 + mapObject.x / 2 + 'px';
+            label.style.top = 2500 + mapObject.y / 2 + 'px';
+            fragment.appendChild(label);
         }
 
         map.appendChild(fragment);
@@ -1794,6 +1831,10 @@ function removeAllWaypoints() {
     var waypoints = map.querySelectorAll('.waypoint');
     for (var i = 0; i < waypoints.length; i++) {
         waypoints[i].remove();
+    }
+    var labels = map.querySelectorAll('.poi-label');
+    for (var j = 0; j < labels.length; j++) {
+        labels[j].remove();
     }
     document.getElementById('path-group').innerHTML = '';
 }
