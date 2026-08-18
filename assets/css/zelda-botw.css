@@ -1890,6 +1890,24 @@ button.no-text.with-icon:before {
         calc(var(--hh-icon-size, 14px) * -1.5 / var(--map-scale, 1))
     );
 }
+/* Missed in the shrine/divine-beast sizing pass — left at the bare 1x
+   token while shrines got 1.35x and divine beasts got 3x, which is why
+   these read as "ridiculously tiny" next to everything else. Matching
+   shrine's ratio since Hinox/Talus/Molduga are similar in count (40/40/4
+   vs. 120 shrines), not divine beast's 3x (only 4 of those on the map). */
+#map-container .waypoint.hinox,
+#map-container .waypoint.hinox-defeated,
+#map-container .waypoint.talus,
+#map-container .waypoint.talus-defeated,
+#map-container .waypoint.molduga,
+#map-container .waypoint.molduga-defeated {
+    width: calc(var(--hh-icon-size, 14px) * 1.8 / var(--map-scale, 1));
+    height: calc(var(--hh-icon-size, 14px) * 1.8 / var(--map-scale, 1));
+    transform: translate(
+        calc(var(--hh-icon-size, 14px) * -0.9 / var(--map-scale, 1)),
+        calc(var(--hh-icon-size, 14px) * -0.9 / var(--map-scale, 1))
+    );
+}
 #map-container .waypoint.location#Location_StartPoint,
 #map-container .waypoint.location-discovered#Location_StartPoint,
 #map-container .waypoint.shrine-resurrection {
