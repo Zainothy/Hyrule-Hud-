@@ -47,31 +47,34 @@
 <div id="toolbar" class="hidden">
 	<div id="map-stats-section">
 		<div class="toolbar-section-title">Map Stats<span class="section-toggle-indicator"> ▾</span></div>
-		<label for="span-number-koroks" data-type="korok"><span class="stat-label-text">Korok Seeds</span>
-			<span class="legend-bar dot-korok"></span>
+		<label for="span-number-koroks" data-type="korok">
+			<span class="map-visibility-toggle dot-korok" data-visibility-types="korok" role="button" tabindex="0" aria-label="Korok Seeds map visibility" aria-pressed="false"></span>
+			<span class="stat-label-text">Korok Seeds</span>
 			<span class="stat-value"><span id="span-number-koroks"></span><span id="span-number-total-koroks">/900</span></span>
 		</label>
 		<details id="locations-filter-group" class="stat-collapse-group">
 			<summary>
 				<span class="filter-summary-main">
-					<span class="stat-dot dot-location"></span>
+					<span class="map-visibility-toggle dot-location" data-visibility-types="location location-discovered" role="button" tabindex="0" aria-label="Locations map visibility" aria-pressed="false"></span>
 					<span class="stat-label-text">Locations</span>
 				</span>
 				<span class="stat-value"><span id="span-number-locations-overview"></span>/<span id="span-number-total-locations-overview"></span></span>
 			</summary>
-			<label for="span-number-locations" data-type="location"><span class="stat-label-text">Not Visited</span>
-				<span class="legend-bar dot-location"></span>
+			<label for="span-number-locations" data-type="location">
+				<span class="map-visibility-toggle dot-location-unvisited" data-visibility-types="location" role="button" tabindex="0" aria-label="Unvisited locations map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Not Visited</span>
 				<span class="stat-value"><span id="span-number-locations"></span>/<span id="span-number-total-locations"></span></span>
 			</label>
-			<label for="span-number-locations-visited" data-type="location-discovered"><span class="stat-label-text">Visited</span>
-				<span class="legend-bar dot-location-discovered"></span>
+			<label for="span-number-locations-visited" data-type="location-discovered">
+				<span class="map-visibility-toggle dot-location-discovered" data-visibility-types="location-discovered" role="button" tabindex="0" aria-label="Visited locations map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Visited</span>
 				<span class="stat-value"><span id="span-number-locations-visited"></span>/<span id="span-number-total-locations-visited"></span></span>
 			</label>
 		</details>
 		<div id="shrine-filter-group" class="map-filter-group">
 			<div class="filter-summary-row">
 				<span class="filter-summary-main">
-					<span class="filter-summary-icon shrine-summary-icon"></span>
+					<span class="map-visibility-toggle shrine-summary-icon" data-visibility-types="shrine-not-activated shrine shrine-completed" role="button" tabindex="0" aria-label="Shrines map visibility" aria-pressed="false"></span>
 					<span class="stat-label-text">Shrines</span>
 				</span>
 				<span class="stat-value"><span id="span-number-shrines-overview"></span>/<span id="span-number-total-shrines-overview"></span></span>
@@ -88,45 +91,66 @@
 				<span id="span-number-shrines-completed"></span><span id="span-number-total-shrines-completed"></span>
 			</span>
 		</div>
-		<label for="span-number-towers" data-type="tower"><span class="stat-label-text">Towers</span>
-			<span class="legend-bar dot-tower"></span>
+		<label for="span-number-towers" data-type="tower">
+			<span class="map-visibility-toggle dot-tower" data-visibility-types="tower" role="button" tabindex="0" aria-label="Towers map visibility" aria-pressed="false"></span>
+			<span class="stat-label-text">Towers</span>
 			<span class="stat-value"><span id="span-number-towers"></span>/<span id="span-number-total-towers"></span></span>
 		</label>
 		<details id="divine-beasts-filter-group" class="stat-collapse-group">
 			<summary>
 				<span class="filter-summary-main">
-					<span class="stat-dot dot-divine-beast"></span>
+					<span class="map-visibility-toggle dot-divine-beast" data-visibility-types="divine-beast divine-beast-completed" role="button" tabindex="0" aria-label="Divine Beasts map visibility" aria-pressed="false"></span>
 					<span class="stat-label-text">Divine Beasts</span>
 				</span>
 				<span class="stat-value"><span id="span-number-divine-beasts-overview"></span>/<span id="span-number-total-divine-beasts-overview"></span></span>
 			</summary>
-			<label for="span-number-divine-beasts-incomplete" data-type="divine-beast"><span class="stat-label-text">Incomplete</span>
-				<span class="legend-bar dot-divine-beast"></span>
+			<label for="span-number-divine-beasts-incomplete" data-type="divine-beast">
+				<span class="map-visibility-toggle dot-divine-beast" data-visibility-types="divine-beast" role="button" tabindex="0" aria-label="Incomplete Divine Beasts map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Incomplete</span>
 				<span class="stat-value"><span id="span-number-divine-beasts-incomplete"></span>/<span id="span-number-total-divine-beasts-incomplete"></span></span>
 			</label>
-			<label for="span-number-divine-beasts-completed" data-type="divine-beast-completed"><span class="stat-label-text">Completed</span>
-				<span class="legend-bar dot-divine-beast-completed"></span>
+			<label for="span-number-divine-beasts-completed" data-type="divine-beast-completed">
+				<span class="map-visibility-toggle dot-divine-beast-completed" data-visibility-types="divine-beast-completed" role="button" tabindex="0" aria-label="Completed Divine Beasts map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Completed</span>
 				<span class="stat-value"><span id="span-number-divine-beasts-completed"></span>/<span id="span-number-total-divine-beasts-completed"></span></span>
 			</label>
 		</details>
 		<details id="miniboss-filter-group" class="stat-collapse-group">
 			<summary>
 				<span class="filter-summary-main">
-					<span class="stat-dot dot-miniboss"></span>
+					<span class="map-visibility-toggle dot-miniboss" data-visibility-types="hinox hinox-defeated talus talus-defeated molduga molduga-defeated" role="button" tabindex="0" aria-label="Mini-Bosses map visibility" aria-pressed="false"></span>
 					<span class="stat-label-text">Mini-Bosses</span>
 				</span>
 				<span class="stat-value"><span id="span-number-minibosses-defeated"></span>/<span id="span-number-total-minibosses"></span></span>
 			</summary>
-			<label for="span-number-hinox-defeated" data-type="hinox-defeated"><span class="stat-label-text">Hinox Defeated</span>
-				<span class="legend-bar dot-hinox-defeated"></span>
+			<label for="span-number-hinox" data-type="hinox">
+				<span class="map-visibility-toggle dot-hinox" data-visibility-types="hinox" role="button" tabindex="0" aria-label="Hinox map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Hinox</span>
+				<span class="stat-value"><span id="span-number-hinox"></span>/<span id="span-number-total-hinox-remaining"></span></span>
+			</label>
+			<label for="span-number-hinox-defeated" data-type="hinox-defeated">
+				<span class="map-visibility-toggle dot-hinox-defeated" data-visibility-types="hinox-defeated" role="button" tabindex="0" aria-label="Defeated Hinox map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Hinox Defeated</span>
 				<span class="stat-value"><span id="span-number-hinox-defeated"></span>/<span id="span-number-total-hinox"></span></span>
 			</label>
-			<label for="span-number-talus-defeated" data-type="talus-defeated"><span class="stat-label-text">Talus Defeated</span>
-				<span class="legend-bar dot-talus-defeated"></span>
+			<label for="span-number-talus" data-type="talus">
+				<span class="map-visibility-toggle dot-talus" data-visibility-types="talus" role="button" tabindex="0" aria-label="Talus map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Talus</span>
+				<span class="stat-value"><span id="span-number-talus"></span>/<span id="span-number-total-talus-remaining"></span></span>
+			</label>
+			<label for="span-number-talus-defeated" data-type="talus-defeated">
+				<span class="map-visibility-toggle dot-talus-defeated" data-visibility-types="talus-defeated" role="button" tabindex="0" aria-label="Defeated Talus map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Talus Defeated</span>
 				<span class="stat-value"><span id="span-number-talus-defeated"></span>/<span id="span-number-total-talus"></span></span>
 			</label>
-			<label for="span-number-molduga-defeated" data-type="molduga-defeated"><span class="stat-label-text">Molduga Defeated</span>
-				<span class="legend-bar dot-molduga-defeated"></span>
+			<label for="span-number-molduga" data-type="molduga">
+				<span class="map-visibility-toggle dot-molduga" data-visibility-types="molduga" role="button" tabindex="0" aria-label="Molduga map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Molduga</span>
+				<span class="stat-value"><span id="span-number-molduga"></span>/<span id="span-number-total-molduga-remaining"></span></span>
+			</label>
+			<label for="span-number-molduga-defeated" data-type="molduga-defeated">
+				<span class="map-visibility-toggle dot-molduga-defeated" data-visibility-types="molduga-defeated" role="button" tabindex="0" aria-label="Defeated Molduga map visibility" aria-pressed="false"></span>
+				<span class="stat-label-text">Molduga Defeated</span>
 				<span class="stat-value"><span id="span-number-molduga-defeated"></span>/<span id="span-number-total-molduga"></span></span>
 			</label>
 		</details>
