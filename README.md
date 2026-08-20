@@ -2,9 +2,9 @@
 
 Hyrule HUD is a live save monitor and minimap power tool for Zelda: Breath of the Wild players who care about completion, routing, and speedrun-friendly map state.
 
-It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a local browser/Electron UI.
+It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a native Electron window.
 
-> Current release: **v0.2.1 / Phase 1 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. Download the Windows installer from [the v0.2.1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.1).
+> Current source: **v0.2.5 / Phase 2.5 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. The latest published installer is [v0.2.4](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.4); the native-window shell is in source and will be included in the next packaged release.
 
 Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor) and the save-tooling lineage behind it. Full credit is kept in [NOTICE.md](./NOTICE.md).
 
@@ -12,11 +12,11 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 | Game | Platform | Status |
 |---|---|---|
-| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.1 |
+| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.5 source |
 | Breath of the Wild | Switch save format | Roadmap |
 | Tears of the Kingdom | Switch save format | Roadmap |
 
-## Phase 1 Highlights
+## Highlights
 
 - Eight-slot Cemu save detection: slots `0`-`5` for Normal Mode and slots `6`-`7` for Master Mode.
 - Save Slot picker with Auto mode and manual slot pinning.
@@ -28,14 +28,18 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 - Per-beast Divine Beast iconography and a dedicated Shrine of Resurrection icon.
 - Collapsed Map Stats groups for Locations, Divine Beasts, and Mini-Bosses.
 - Clean tracking controls for Auto-follow, Marker visibility, and Follow zoom.
+- Always-on location labels for current map waypoints using existing display-name metadata.
+- Native Electron app window by default, with close-to-tray behavior.
+- Optional tray action to open the same local app in the system browser for second-device or LAN workflows.
 
 ## Install
 
 ### Windows App
 
-1. Download `Hyrule-HUD-Setup-0.2.1.exe` from [the latest Phase 1 release](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.1).
+1. Download the latest `Hyrule-HUD-Setup-*.exe` from [Releases](https://github.com/Zainothy/Hyrule-Hud-/releases).
 2. Run the installer.
 3. In setup, choose your BotW Cemu save folder.
+4. Hyrule HUD opens in its own app window. Closing the window hides it to the system tray; use the tray menu to reopen, quit, reconfigure, or open the app in your browser.
 
 Valid save-folder shapes include:
 
@@ -54,9 +58,9 @@ $env:STATIC_ROOT = (Get-Location).Path
 node server/server.js
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`, or run the Electron app so it loads the local server in a native window.
 
-For real-save development checks through the server entry point, pass the save root through the launcher or `startServer(port, savePath)`. The packaged Electron app writes this as `SAVE_PATH_BASE` after setup.
+For real-save development checks through the server entry point, pass the save root through the launcher or `startServer(port, savePath)`. The packaged Electron app passes the configured save path after setup.
 
 ### Build
 
@@ -114,7 +118,7 @@ The server also exposes state endpoints for map view, hidden marker types, dismi
 
 ## Map Rendering Status
 
-The marker layer has zoom-aware sizing, but the base map is currently a single `6000x5000` raster PNG at [assets/images/BotW-Map.png](./assets/images/BotW-Map.png). At high zoom, that base image can pixelate because the browser is enlarging a raster source.
+The marker layer has zoom-aware sizing, but the base map is currently a single `6000x5000` raster PNG at [assets/images/BotW-Map.png](./assets/images/BotW-Map.png). At high zoom, that base image can pixelate because the Chromium renderer is enlarging a raster source.
 
 Phase 2 includes a rendering-quality investigation. The likely near-term path is a high-resolution tiled raster pyramid or hybrid raster base plus vector overlays. A true fully vectorized map depends on sourcing or generating reliable vector/topographic data; automatic raster-to-SVG tracing is unlikely to preserve the visual quality of the BotW map.
 
@@ -126,6 +130,13 @@ Phase 2 includes a rendering-quality investigation. The likely near-term path is
 - Zoom-aware label thresholds based on the current region-label and `--map-scale` patterns.
 - Generalized category filters for current save-derived entities.
 - Map rendering quality: evaluate tiled raster, hybrid vector overlays, and the feasibility of true vector source data.
+
+### Phase 2.5 - Native App Window
+
+- Default to a native Electron `BrowserWindow` instead of opening the system browser.
+- Keep the existing local server, API, and Server-Sent Events architecture.
+- Hide to tray on window close; Quit remains explicit in the tray menu.
+- Keep "Open in Browser" as an optional tray action.
 
 ### Phase 3 - Search
 
