@@ -102,21 +102,20 @@ Phase 2 includes a rendering-quality investigation. The likely near-term path is
 
 ## Roadmap
 
-### Phase 2 - Info Density And Map Rendering Quality
+### ~~Phase 2 - Info Density And Map Rendering Quality~~
 
-- Always-on location labels using existing `display_name` metadata.
-- Zoom-aware icon and label thresholds based on the current region-label and `--map-scale` patterns.
-- Explicit per-category visibility controls for zoom-suppressed and user-hidden map entities.
-- Generalized category filters for current save-derived entities.
-- Map rendering quality: evaluate tiled raster, hybrid vector overlays, and the feasibility of true vector source data.
+- [x] ~~Always-on location labels using existing `display_name` metadata.~~
+- [x] ~~Zoom-aware icon and label thresholds based on the current region-label and `--map-scale` patterns.~~
+- [x] ~~Explicit per-category visibility controls for zoom-suppressed and user-hidden map entities.~~
+- [x] ~~Generalized category filters for current save-derived entities.~~
+- [x] ~~Map rendering quality: evaluate tiled raster, hybrid vector overlays, and the feasibility of true vector source data.~~
 
-### Phase 2.5 - Native App Window
+### ~~Phase 2.5 - Native App Window~~
 
-- Default to a native Electron `BrowserWindow` instead of opening the system browser.
-- Keep the existing local server, API, and Server-Sent Events architecture.
-- Hide to tray on window close; Quit remains explicit in the tray menu.
-- Keep "Open in Browser" as an optional tray action.
-
+- [x] ~~Default to a native Electron `BrowserWindow` instead of opening the system browser.~~
+- [x] ~~Keep the existing local server, API, and Server-Sent Events architecture.~~
+- [x] ~~Hide to tray on window close; Quit remains explicit in the tray menu.~~
+- [x] ~~Keep "Open in Browser" as an optional tray action.~~
 ### Phase 3 - Search
 
 - Search by display name, internal id, and category.
