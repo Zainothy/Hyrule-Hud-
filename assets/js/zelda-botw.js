@@ -1798,9 +1798,7 @@ function setupToolbarHover() {
             });
             label.addEventListener('click', function (event) {
                 if (event.target.closest('.map-visibility-hit-target')) return;
-                var isHidden = label.getAttribute('data-hidden') === 'true';
-                setTypeVisibilityState(type, !isHidden, false);
-                persistTypeVisibilityStates([type], !isHidden, false);
+                toggleVisibilityTypes([type]);
             });
         }
     );
