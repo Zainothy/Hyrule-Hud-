@@ -1373,17 +1373,23 @@ window.addEventListener(
 // Phase 2b — zoom-density thresholds for map icons and point-of-interest labels.
 // pct is 0 at minZoom (fully zoomed out) to 1 at maxZoom (fully zoomed in),
 // same convention as initRegionLabels() below. The overview keeps only the
-// strongest navigational anchors, then progressively adds bosses/locations,
-// with koroks last because their 900-point density overwhelms the map.
+// strongest navigational anchors, then progressively adds shrines/POIs, bosses,
+// most other map items, and finally koroks because their 900-point density
+// overwhelms the map.
 // Matches by prefix so state variants (shrine-completed, hinox-defeated,
 // etc.) fall into the same bucket as their base category without needing
 // every variant enumerated.
-function isCoreMapType(className) {
+function isOverviewMapType(className) {
     return (
         className.indexOf('tower') === 0 ||
-        className.indexOf('shrine') === 0 ||
-        className.indexOf('divine-beast') === 0 ||
         className.indexOf('player-position') === 0
+    );
+}
+
+function isEarlyMapAnchorType(className) {
+    return (
+        className.indexOf('shrine') === 0 ||
+        className.indexOf('divine-beast') === 0
     );
 }
 
@@ -1396,32 +1402,33 @@ function isMiniBossType(className) {
 }
 
 function waypointIconMinPct(className, markerName) {
-    if (markerName === 'Location_StartPoint') return 0;
-    if (isCoreMapType(className)) return 0;
-    if (isMiniBossType(className)) return 0.18;
+    if (isOverviewMapType(className)) return 0;
+    if (markerName === 'Location_StartPoint') return 0.04;
+    if (isEarlyMapAnchorType(className)) return 0.04;
+    if (isMiniBossType(className)) return 0.08;
     if (
         className.indexOf('location-discovered') === 0 ||
         className.indexOf('labo') === 0 ||
         className.indexOf('warp') === 0
     )
-        return 0.26;
-    if (className.indexOf('location') === 0) return 0.32;
-    if (className.indexOf('korok') === 0) return 0.42;
-    return 0.3;
+        return 0.08;
+    if (className.indexOf('location') === 0) return 0.1;
+    if (className.indexOf('korok') === 0) return 0.48;
+    return 0.1;
 }
 
 function poiLabelMinPct(className) {
-    if (className.indexOf('tower') === 0 || className.indexOf('divine-beast') === 0)
-        return 0.08;
-    if (className.indexOf('shrine') === 0) return 0.18;
+    if (className.indexOf('tower') === 0) return 0.08;
+    if (className.indexOf('divine-beast') === 0) return 0.14;
+    if (className.indexOf('shrine') === 0) return 0.16;
     if (isMiniBossType(className)) return 0.25;
     if (
         className.indexOf('location-discovered') === 0 ||
         className.indexOf('labo') === 0 ||
         className.indexOf('warp') === 0
     )
-        return 0.32;
-    return 0.38; // undiscovered locations
+        return 0.28;
+    return 0.34; // undiscovered locations
 }
 
 var _mapDensityZoomRegistered = false;
