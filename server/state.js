@@ -21,7 +21,6 @@ const DEFAULT_STATE = {
     schemaVersion: 1,
     stateVersion: 0,
     hiddenTypes: [],
-    forcedVisibleTypes: [],
     hiddenServices: [],
     testMode: '',
     trackPlayer: false,

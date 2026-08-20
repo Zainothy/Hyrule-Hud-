@@ -18,7 +18,6 @@ var _dismissedWaypoints = { koroks: new Set(), locations: new Set() };
 var _lastStateVersion = -1;
 var _prevAppliedState = null;
 var _lastHiddenTypes = [];
-var _lastForcedVisibleTypes = [];
 
 var shrines = {};
 var towers = {};
@@ -850,7 +849,6 @@ window.addEventListener(
         function applyState(s, applyToMap, restoreMapView) {
             if (!s) return;
             _lastHiddenTypes = s.hiddenTypes || [];
-            _lastForcedVisibleTypes = s.forcedVisibleTypes || [];
 
             // Audio feedback — play a tone when specific state categories change
             var prev = _prevAppliedState;
@@ -1145,7 +1143,6 @@ window.addEventListener(
 
             _prevAppliedState = s;
             _lastStateVersion = s.stateVersion || 0;
-            syncVisibilityToggleButtons();
             updateSectionIndicators();
         }
 
@@ -1172,7 +1169,6 @@ window.addEventListener(
         syncStateFromServer().then(function (s) {
             applyState(s, false, true);
             setupToolbarHover();
-            setupVisibilityToggleButtons();
             setupPlayerMarkerToggle();
             setupShrineFilterSelect();
             setupServiceToggles();
@@ -1475,12 +1471,7 @@ function updateMapDensityVisibility() {
             waypoints[i].getAttribute('data-zoom-min-pct')
         );
         if (isNaN(waypointMinPct)) waypointMinPct = 0;
-        setVisibilityFlag(
-            waypoints[i],
-            'zoom',
-            waypoints[i].getAttribute('data-force-visible') !== 'true' &&
-                pct < waypointMinPct
-        );
+        setVisibilityFlag(waypoints[i], 'zoom', pct < waypointMinPct);
     }
     var labels = document.querySelectorAll('.poi-label');
     for (var j = 0; j < labels.length; j++) {
@@ -1491,7 +1482,7 @@ function updateMapDensityVisibility() {
     setSelectorVisibilityFlag(
         '#path-group .line',
         'zoom',
-        !isTypeForceVisible('korok') && pct < waypointIconMinPct('korok')
+        pct < waypointIconMinPct('korok')
     );
     if (!_mapDensityZoomRegistered && window.MapView && window.MapView.onZoom) {
         _mapDensityZoomRegistered = true;
@@ -1548,169 +1539,6 @@ function setWaypointTypeVisible(type, visible) {
         setSelectorVisibilityFlag('#path-group .line', 'user', !visible);
     }
     updateMapDensityVisibility();
-}
-
-function listHasValue(list, value) {
-    return (list || []).indexOf(value) !== -1;
-}
-
-function setListValue(list, value, present) {
-    var next = (list || []).filter(function (item) {
-        return item !== value;
-    });
-    if (present) next.push(value);
-    return next;
-}
-
-function getVisibilityTypes(control) {
-    return (control.getAttribute('data-visibility-types') || '')
-        .split(/\s+/)
-        .filter(Boolean);
-}
-
-function isTypeHiddenByUser(type) {
-    return listHasValue(_lastHiddenTypes, type);
-}
-
-function isTypeForceVisible(type) {
-    return listHasValue(_lastForcedVisibleTypes, type);
-}
-
-function setTypeControlHidden(type, hidden) {
-    [].forEach.call(
-        document.querySelectorAll('#toolbar [data-type="' + type + '"]'),
-        function (control) {
-            if (hidden) control.setAttribute('data-hidden', 'true');
-            else control.removeAttribute('data-hidden');
-        }
-    );
-}
-
-function setWaypointTypeForceVisible(type, forceVisible) {
-    [].forEach.call(
-        document.querySelectorAll('.waypoint.' + type),
-        function (waypoint) {
-            if (forceVisible) waypoint.setAttribute('data-force-visible', 'true');
-            else waypoint.removeAttribute('data-force-visible');
-        }
-    );
-    updateMapDensityVisibility();
-}
-
-function applyForcedVisibleStates(types) {
-    [].forEach.call(
-        document.querySelectorAll('.waypoint[data-force-visible]'),
-        function (waypoint) {
-            waypoint.removeAttribute('data-force-visible');
-        }
-    );
-    (types || []).forEach(function (type) {
-        setWaypointTypeForceVisible(type, true);
-    });
-    updateMapDensityVisibility();
-    syncVisibilityToggleButtons();
-}
-
-function setTypeVisibilityState(type, hidden, forceVisible) {
-    _lastHiddenTypes = setListValue(_lastHiddenTypes, type, hidden);
-    _lastForcedVisibleTypes = setListValue(
-        _lastForcedVisibleTypes,
-        type,
-        !hidden && forceVisible
-    );
-    setTypeControlHidden(type, hidden);
-    setWaypointTypeVisible(type, !hidden);
-    setWaypointTypeForceVisible(type, !hidden && forceVisible);
-}
-
-function persistTypeVisibilityStates(types, hidden, forceVisible) {
-    BotWApi.patch('/api/state/hidden-types-bulk', {
-        types: types,
-        hidden: hidden
-    });
-    BotWApi.patch('/api/state/forced-visible-types-bulk', {
-        types: types,
-        forceVisible: !hidden && forceVisible
-    });
-}
-
-function hasVisibleWaypointForType(type) {
-    var waypoints = document.querySelectorAll('.waypoint.' + type);
-    if (!waypoints.length) return !isTypeHiddenByUser(type);
-    return [].some.call(waypoints, function (waypoint) {
-        return (
-            !waypoint.hasAttribute('data-hidden-by-user') &&
-            !waypoint.hasAttribute('data-hidden-by-zoom')
-        );
-    });
-}
-
-function syncVisibilityToggleButton(button) {
-    var types = getVisibilityTypes(button);
-    if (!types.length) return;
-    var allHidden = types.every(isTypeHiddenByUser);
-    var anyForced = types.some(isTypeForceVisible);
-    if (allHidden) {
-        button.setAttribute('data-hidden', 'true');
-        button.removeAttribute('data-force-visible');
-        button.setAttribute('aria-pressed', 'false');
-        button.title = 'Show on map';
-    } else {
-        button.removeAttribute('data-hidden');
-        if (anyForced) {
-            button.setAttribute('data-force-visible', 'true');
-            button.setAttribute('aria-pressed', 'true');
-            button.title = 'Hide from map';
-        } else {
-            button.removeAttribute('data-force-visible');
-            button.setAttribute('aria-pressed', 'false');
-            button.title = 'Show at any zoom';
-        }
-    }
-}
-
-function syncVisibilityToggleButtons() {
-    [].forEach.call(
-        document.querySelectorAll(
-            '#toolbar .map-visibility-toggle[data-visibility-types]'
-        ),
-        syncVisibilityToggleButton
-    );
-}
-
-function toggleVisibilityTypes(types) {
-    if (!types.length) return;
-    var allHidden = types.every(isTypeHiddenByUser);
-    var anyVisible = types.some(hasVisibleWaypointForType);
-    var showAndForce = allHidden || !anyVisible;
-    types.forEach(function (type) {
-        setTypeVisibilityState(type, !showAndForce, showAndForce);
-    });
-    persistTypeVisibilityStates(types, !showAndForce, showAndForce);
-    syncVisibilityToggleButtons();
-    updateSectionIndicators();
-}
-
-function setupVisibilityToggleButtons() {
-    [].forEach.call(
-        document.querySelectorAll(
-            '#toolbar .map-visibility-toggle[data-visibility-types]'
-        ),
-        function (button) {
-            var activate = function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                toggleVisibilityTypes(getVisibilityTypes(button));
-            };
-            button.addEventListener('click', activate);
-            button.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    activate(event);
-                }
-            });
-        }
-    );
-    syncVisibilityToggleButtons();
 }
 
 function syncPlayerMarkerToggleState() {
@@ -1810,9 +1638,23 @@ function setupToolbarHover() {
                     }
                 );
             });
-            label.addEventListener('click', function (event) {
-                if (event.target.closest('.map-visibility-toggle')) return;
-                toggleVisibilityTypes([type]);
+            label.addEventListener('click', function () {
+                var isHidden = label.getAttribute('data-hidden') === 'true';
+                if (isHidden) {
+                    label.removeAttribute('data-hidden');
+                    BotWApi.patch('/api/state/hidden-types', {
+                        type: type,
+                        hidden: false
+                    });
+                    setWaypointTypeVisible(type, true);
+                } else {
+                    label.setAttribute('data-hidden', 'true');
+                    BotWApi.patch('/api/state/hidden-types', {
+                        type: type,
+                        hidden: true
+                    });
+                    setWaypointTypeVisible(type, false);
+                }
             });
         }
     );
@@ -1830,7 +1672,6 @@ function applyHiddenStates() {
         }
     );
     applyShrineFilterFromHiddenTypes(_lastHiddenTypes);
-    applyForcedVisibleStates(_lastForcedVisibleTypes);
     syncPlayerMarkerToggleState();
 }
 
@@ -2110,16 +1951,10 @@ function renderEnemyStats(hinoxDefeated, talusDefeated, moldugaDefeated) {
     var hinoxTotal = Object.keys(hinoxLocations).length;
     var talusTotal = Object.keys(talusLocations).length;
     var moldugaTotal = Object.keys(moldugaLocations).length;
-    setValue('span-number-hinox', hinoxTotal - hinoxDefeated);
-    setValue('span-number-total-hinox-remaining', hinoxTotal);
     setValue('span-number-hinox-defeated', hinoxDefeated);
     setValue('span-number-total-hinox', hinoxTotal);
-    setValue('span-number-talus', talusTotal - talusDefeated);
-    setValue('span-number-total-talus-remaining', talusTotal);
     setValue('span-number-talus-defeated', talusDefeated);
     setValue('span-number-total-talus', talusTotal);
-    setValue('span-number-molduga', moldugaTotal - moldugaDefeated);
-    setValue('span-number-total-molduga-remaining', moldugaTotal);
     setValue('span-number-molduga-defeated', moldugaDefeated);
     setValue('span-number-total-molduga', moldugaTotal);
     setValue(
@@ -2651,11 +2486,8 @@ function setupSectionHeadingToggles() {
         'tower',
         'divine-beast',
         'divine-beast-completed',
-        'hinox',
         'hinox-defeated',
-        'talus',
         'talus-defeated',
-        'molduga',
         'molduga-defeated'
     ];
     var SERVICE_TYPES = [
@@ -2686,20 +2518,21 @@ function setupSectionHeadingToggles() {
             });
             var makeHidden = allVisible; // all visible → hide all; any hidden → show all
 
+            [].forEach.call(labels, function (label) {
+                if (makeHidden) {
+                    label.setAttribute('data-hidden', 'true');
+                } else {
+                    label.removeAttribute('data-hidden');
+                }
+            });
+
             // Sync map markers. Types are driven from the canonical item list
             // because the shrine filter is a single select, not three labels.
             if (itemsKey === 'types') {
                 items.forEach(function (typeAttr) {
-                    setTypeVisibilityState(typeAttr, makeHidden, false);
+                    setWaypointTypeVisible(typeAttr, !makeHidden);
                 });
             } else {
-                [].forEach.call(labels, function (label) {
-                    if (makeHidden) {
-                        label.setAttribute('data-hidden', 'true');
-                    } else {
-                        label.removeAttribute('data-hidden');
-                    }
-                });
                 [].forEach.call(labels, function (label) {
                     var svcType = label.getAttribute('data-service');
                     if (!svcType) return;
@@ -2721,14 +2554,7 @@ function setupSectionHeadingToggles() {
             body[itemsKey] = items;
             body.hidden = makeHidden;
             BotWApi.patch(apiEndpoint, body);
-            if (itemsKey === 'types') {
-                BotWApi.patch('/api/state/forced-visible-types-bulk', {
-                    types: items,
-                    forceVisible: false
-                });
-            }
 
-            syncVisibilityToggleButtons();
             updateSectionIndicators();
         });
     }

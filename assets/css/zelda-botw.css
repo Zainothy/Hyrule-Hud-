@@ -604,14 +604,24 @@ body.test-mode #test-banner {
     margin: 0;
     min-height: 28px;
     padding: 3px 8px;
-    user-select: none;
 }
+#map-stats-section label[data-type]::before,
 .stat-dot {
     content: '';
     width: 8px;
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
+}
+#map-stats-section label[data-type]::before {
+    grid-column: 1;
+    justify-self: start;
+}
+#toolbar label[data-type='korok']::before {
+    background: #c6b96f;
+}
+#toolbar label[data-type='location']::before {
+    background: #ff6600;
 }
 .dot-location {
     width: 18px;
@@ -642,8 +652,37 @@ body.test-mode #test-banner {
     left: 10px;
     background: #00ffaa;
 }
+#toolbar label[data-type='location-discovered']::before {
+    background: #00ffaa;
+}
+#toolbar label[data-type='shrine']::before {
+    background: #ff9d21;
+    border: 1px solid #1cb7ff;
+    box-sizing: border-box;
+}
+#toolbar label[data-type='shrine-completed']::before {
+    background: #1cb7ff;
+}
+#toolbar label[data-type='shrine-not-activated']::before {
+    background: #ff9d21;
+}
+#toolbar label[data-type='tower']::before {
+    background: #cc00ff;
+}
+#toolbar label[data-type='divine-beast']::before {
+    background: #ff6a21;
+    border-radius: 0;
+    mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
+    -webkit-mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
+}
 .dot-divine-beast {
     background: #ff9d21;
+    border-radius: 0;
+    mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
+    -webkit-mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
+}
+#toolbar label[data-type='divine-beast-completed']::before {
+    background: #35d777;
     border-radius: 0;
     mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
     -webkit-mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
@@ -651,135 +690,22 @@ body.test-mode #test-banner {
 .dot-miniboss {
     background: #9d9883;
 }
-#toolbar label .legend-bar {
-    display: none;
-}
-#map-stats-section .map-visibility-toggle {
-    grid-column: 1;
-    justify-self: center;
-    display: inline-grid;
-    place-items: center;
-    position: relative;
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border-radius: 50%;
-    background: transparent;
-    cursor: pointer;
-    line-height: 1;
-    overflow: visible;
-    color: transparent;
-    font-size: 0;
-    text-shadow: none;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-#map-stats-section .map-visibility-toggle::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #9d9883;
-}
-#map-stats-section .map-visibility-toggle.dot-korok::before {
-    background: #c6b96f;
-}
-#map-stats-section .map-visibility-toggle.dot-location,
-#map-stats-section .map-visibility-toggle.dot-location-unvisited,
-#map-stats-section .map-visibility-toggle.dot-location-discovered,
-#map-stats-section .map-visibility-toggle.dot-divine-beast,
-#map-stats-section .map-visibility-toggle.dot-divine-beast-completed,
-#map-stats-section .map-visibility-toggle.dot-miniboss {
-    width: 18px;
-    background: transparent;
-    box-shadow: none;
-    mask: none;
-    -webkit-mask: none;
-}
-#map-stats-section .map-visibility-toggle.dot-location::before {
-    background: #ff6600;
-    box-shadow: 9px 0 0 #00ffaa;
-}
-#map-stats-section .map-visibility-toggle.dot-location-unvisited::before {
-    background: #ff6600;
-}
-#map-stats-section .map-visibility-toggle.dot-location-discovered::before {
-    background: #00ffaa;
-}
-#map-stats-section .map-visibility-toggle.dot-tower::before {
-    background: #cc00ff;
-}
-#map-stats-section .map-visibility-toggle.dot-divine-beast::before,
-#map-stats-section .map-visibility-toggle.dot-divine-beast-completed::before {
-    border-radius: 0;
-    mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
-    -webkit-mask: url('../icons/mapicon_divine_beast.svg') center / contain no-repeat;
-}
-#map-stats-section .map-visibility-toggle.dot-divine-beast::before {
-    background: #ff9d21;
-}
-#map-stats-section .map-visibility-toggle.dot-divine-beast-completed::before {
-    background: #35d777;
-}
-#map-stats-section .map-visibility-toggle.dot-miniboss::before,
-#map-stats-section .map-visibility-toggle.dot-hinox::before,
-#map-stats-section .map-visibility-toggle.dot-talus::before,
-#map-stats-section .map-visibility-toggle.dot-molduga::before {
-    background: #9d9883;
-}
-#map-stats-section .map-visibility-toggle.dot-hinox-defeated::before,
-#map-stats-section .map-visibility-toggle.dot-talus-defeated::before,
-#map-stats-section .map-visibility-toggle.dot-molduga-defeated::before {
+#toolbar label[data-type='hinox-defeated']::before {
     background: #6b6b6b;
 }
-#map-stats-section .map-visibility-toggle.shrine-summary-icon {
-    width: 10px;
-    height: 10px;
-    flex: none;
+#toolbar label[data-type='talus-defeated']::before {
+    background: #6b6b6b;
 }
-#map-stats-section .map-visibility-toggle.shrine-summary-icon::before,
-#map-stats-section .map-visibility-toggle.shrine-summary-icon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    width: 10px;
-    height: 10px;
+#toolbar label[data-type='molduga-defeated']::before {
+    background: #6b6b6b;
 }
-#map-stats-section .map-visibility-toggle.shrine-summary-icon::before {
-    background: #1cb7ff;
-    border-radius: 0;
-    mask: url('../icons/mapicon_dungeon.svg') center / contain no-repeat;
-    -webkit-mask: url('../icons/mapicon_dungeon.svg') center / contain no-repeat;
+#toolbar label[data-type='player-position']::before {
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 4px #fff;
 }
-#map-stats-section .map-visibility-toggle.shrine-summary-icon::after {
-    inset: 31% 34% 16%;
-    width: auto;
-    height: auto;
-    background: #ff9d21;
-    mask: none;
-    -webkit-mask: none;
-    border-radius: 2px 2px 1px 1px;
-}
-#map-stats-section .map-visibility-toggle[data-force-visible='true'] {
-    box-shadow: none;
-}
-#map-stats-section .map-visibility-toggle[data-force-visible='true']::before {
-    filter: brightness(1.35) saturate(1.15);
-}
-#map-stats-section .map-visibility-toggle[data-hidden='true'] {
-    opacity: 0.45;
-}
-#map-stats-section .map-visibility-toggle:hover::before {
-    filter: brightness(1.2);
-}
-#map-stats-section .map-visibility-toggle:focus-visible {
-    outline: none;
-}
-#map-stats-section .map-visibility-toggle:focus-visible::before {
-    box-shadow:
-        0 0 0 1px rgba(10, 18, 30, 0.9),
-        0 0 0 3px rgba(28, 183, 255, 0.85);
+#toolbar label .legend-bar {
+    display: none;
 }
 #map-stats-section label .stat-label-text {
     grid-column: 2;
@@ -864,9 +790,7 @@ body.test-mode #test-banner {
     min-width: 0;
 }
 .filter-summary-icon,
-.stat-collapse-group summary .stat-dot,
-.stat-collapse-group summary .map-visibility-toggle,
-.filter-summary-row .map-visibility-toggle {
+.stat-collapse-group summary .stat-dot {
     grid-column: 1;
     justify-self: start;
 }
@@ -2207,9 +2131,7 @@ button.no-text.with-icon:before {
 }
 
 /* Dimmed appearance for sidebar labels whose category is hidden */
-#toolbar label[data-hidden='true'] {
-    opacity: 0.5;
-}
+#toolbar label[data-hidden='true'],
 #player-marker-toggle[data-hidden='true'] {
     background: rgba(255, 255, 255, 0.07);
     opacity: 0.5;
