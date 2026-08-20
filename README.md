@@ -18,22 +18,11 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 ## Highlights
 
-- Eight-slot Cemu save detection: slots `0`-`5` for Normal Mode and slots `6`-`7` for Master Mode.
-- Save Slot picker with Auto mode and manual slot pinning.
-- Cemu title-root resolution: the app accepts a direct profile folder or a title root containing `user/<profile>/0..7`.
-- Live player stats, completion counters, player position, and Master Mode tint.
-- Stable minimap icon sizing while zooming.
-- Shrine state dropdown: `All States`, `Unactivated`, `Activated`, `Completed`.
-- Shrine state colors: unactivated orange, activated blue/orange, completed blue.
-- Per-beast Divine Beast iconography and a dedicated Shrine of Resurrection icon.
-- Collapsed Map Stats groups for Locations, Divine Beasts, and Mini-Bosses.
-- Clean tracking controls for Auto-follow, Marker visibility, and Follow zoom.
-- Always-on location labels for current map waypoints.
-- Zoom-density tiers: towers at low zoom, then shrines and Divine Beasts, then bosses and POIs, then Koroks.
-- Map Stats rows can force-show zoom-hidden categories or hide visible categories without changing the compact sidebar.
-- Separate undefeated and defeated rows for Hinox, Talus, and Molduga.
-- Native Electron app window by default, with close-to-tray behavior.
-- Optional tray action to open the same local app in the system browser for second-device or LAN workflows.
+- Reads live BotW Cemu saves without mods or emulator plugins, including Normal Mode and Master Mode slots.
+- Runs as a native Electron app with tray behavior; browser access is still available from the tray.
+- Shows completion stats, current slot state, player position, and route-relevant map markers in one view.
+- Uses zoom-density tiers so low zoom stays readable: towers first, then shrines and Divine Beasts, then bosses and POIs, then Koroks.
+- Lets Map Stats rows hide or force-show map categories, including separate undefeated and defeated Hinox, Talus, and Molduga rows.
 
 
 ## Install
