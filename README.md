@@ -21,9 +21,6 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 - Reads live BotW Cemu saves without mods or emulator plugins, including Normal Mode and Master Mode slots.
 - Runs as a native Electron app with tray behavior; browser access is still available from the tray.
 - Shows completion stats, current slot state, player position, and route-relevant map markers in one view.
-- Uses zoom-density tiers so low zoom stays readable: towers first, then shrines and Divine Beasts, then bosses and POIs, then Koroks.
-- Lets Map Stats rows hide or force-show map categories, including separate undefeated and defeated Hinox, Talus, and Molduga rows.
-
 
 ## Install
 
