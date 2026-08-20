@@ -4,7 +4,7 @@ Hyrule HUD is a live save monitor and minimap power tool for Zelda: Breath of th
 
 It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a native Electron window.
 
-> Current source: **v0.2.5 / Phase 2.5 complete**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. The latest published installer is [v0.2.4](https://github.com/Zainothy/Hyrule-Hud-/releases/tag/v0.2.4); the native-window shell is in source and will be included in the next packaged release.
+> Current source: **v0.3.0**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. The app now opens in a native Electron window by default, with the browser path kept as an optional tray action.
 
 Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor) and the save-tooling lineage behind it. Full credit is kept in [NOTICE.md](./NOTICE.md).
 
@@ -12,7 +12,7 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 | Game | Platform | Status |
 |---|---|---|
-| Breath of the Wild | Cemu / Wii U save format | Supported in v0.2.5 source |
+| Breath of the Wild | Cemu / Wii U save format | Supported in v0.3.0 source |
 | Breath of the Wild | Switch save format | Roadmap |
 | Tears of the Kingdom | Switch save format | Roadmap |
 
@@ -29,8 +29,66 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 - Collapsed Map Stats groups for Locations, Divine Beasts, and Mini-Bosses.
 - Clean tracking controls for Auto-follow, Marker visibility, and Follow zoom.
 - Always-on location labels for current map waypoints using existing display-name metadata.
+- Zoom-density tiers that keep low zoom focused on towers/player context, then add shrines, Divine Beasts, mini-bosses, other POIs, and Koroks as the map zooms in.
+- Map Stats rows can force-show zoom-suppressed categories or hide visible categories without changing the compact sidebar layout.
+- Mini-Bosses expose undefeated and defeated Hinox, Talus, and Molduga rows independently.
 - Native Electron app window by default, with close-to-tray behavior.
 - Optional tray action to open the same local app in the system browser for second-device or LAN workflows.
+
+## Release Notes - v0.3.0
+
+### Native App Shell
+
+- Hyrule HUD now opens in its own Electron `BrowserWindow` instead of immediately handing off to the system browser.
+- The app keeps its tray-first lifetime model: closing the window hides it to tray, and Quit remains explicit in the tray menu.
+- The tray menu now has `Open Window` as the primary app action and keeps `Open in Browser` as an optional fallback for LAN, second-device, or debugging workflows.
+- The native window reuses the setup window's hardened Electron pattern: `contextIsolation: true`, `nodeIntegration: false`, and a preload bridge.
+
+### Map Density And Labels
+
+- Map icon density now follows a Zelda Dungeon-style zoom ladder:
+  - Minimum zoom focuses on overview anchors such as towers and player context.
+  - Slightly above minimum zoom adds shrines and Divine Beasts.
+  - Mid zoom adds mini-bosses and most non-Korok POIs.
+  - Koroks appear later than other items because of their density, but not so late that the map becomes frustrating to use.
+- Labels now trail their matching icons, so a type can become useful as an icon before its text labels are allowed to crowd the map.
+- Sidebar toggles no longer reset zoom-hidden icons or labels until the next zoom event. User-hidden state and zoom-density state are now composed separately.
+
+### Explicit Map Visibility Controls
+
+- Map Stats rows now support Zelda Dungeon-style explicit visibility behavior:
+  - Clicking a zoom-hidden row force-shows that category at the current zoom level.
+  - Clicking a visible row hides that category.
+  - Clicking a user-hidden row shows it again.
+- The explicit controls are integrated as invisible 18x18 hit targets over the existing icon rail, so the visible sidebar UI remains the original compact stat-dot layout.
+- Hidden state still wins over force-visible state, and the server prevents `hiddenTypes` and `forcedVisibleTypes` from persisting contradictory values.
+- Labels still respect their label-density thresholds even when icons are force-shown, preventing low-zoom label overload.
+
+### Mini-Boss Filters
+
+- Mini-Bosses now expose undefeated and defeated rows separately:
+  - `Hinox`
+  - `Hinox Defeated`
+  - `Talus`
+  - `Talus Defeated`
+  - `Molduga`
+  - `Molduga Defeated`
+- This makes it possible to hide defeated bosses while keeping undefeated bosses visible, or force-show only a specific boss family at low zoom.
+
+### Fixes And Polish
+
+- Fixed the map-density reset bug where toggling sidebar categories made labels/icons appear frantically until the next zoom change.
+- Fixed mini-boss label thresholds so boss icons can appear early while their labels render later.
+- Preserved the existing Shrine summary glyph and Map Stats rail alignment while adding visibility behavior.
+- Corrected several iterations of sidebar-control styling so the final controls do not move icons, select text, draw slash marks, or obstruct counts.
+
+### Verification
+
+- Verified live Cemu save-root behavior against the local development server.
+- Verified Molduga force-show/hide at minimum zoom through the running app.
+- Verified `npm run test:server`.
+- Verified `npm run lint` passes with only the existing unused-variable warnings.
+- Verified Windows packaging with `npm run build:windows -- --config.directories.output=dist-v0.3.0`.
 
 ## Install
 
@@ -127,7 +185,8 @@ Phase 2 includes a rendering-quality investigation. The likely near-term path is
 ### Phase 2 - Info Density And Map Rendering Quality
 
 - Always-on location labels using existing `display_name` metadata.
-- Zoom-aware label thresholds based on the current region-label and `--map-scale` patterns.
+- Zoom-aware icon and label thresholds based on the current region-label and `--map-scale` patterns.
+- Explicit per-category visibility controls for zoom-suppressed and user-hidden map entities.
 - Generalized category filters for current save-derived entities.
 - Map rendering quality: evaluate tiled raster, hybrid vector overlays, and the feasibility of true vector source data.
 

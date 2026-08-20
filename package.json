@@ -1,7 +1,7 @@
 {
   "name": "Hyrule-Hud-",
-  "version": "0.2.5",
-  "description": "A power-user live save monitor and minimap for Zelda completionists and speedrunners. Reads your emulator save files directly (no mods, no plugins) and renders live completion progress, player position, and stats in the browser. Currently supports BotW on Cemu (Wii U), including Master Mode saves. Switch and Tears of the Kingdom support are on the roadmap — see README.",
+  "version": "0.3.0",
+  "description": "A power-user live save monitor and minimap for Zelda completionists and speedrunners. Reads your emulator save files directly (no mods, no plugins) and renders live completion progress, player position, stats, labels, and map filters in a native Electron window. Currently supports BotW on Cemu (Wii U), including Master Mode saves. Switch and Tears of the Kingdom support are on the roadmap — see README.",
   "main": "electron/main.js",
   "scripts": {
     "lint": "eslint assets/js/zelda-botw.js server/server.js server/state.js server/test.js",
