@@ -1,10 +1,10 @@
 # Hyrule HUD
 
-Hyrule HUD is a live save monitor and minimap power tool for Zelda: Breath of the Wild players who care about completion, routing, and speedrun-friendly map state.
+Hyrule HUD is a live save monitor and minimap for Zelda: Breath of the Wild players who care about completion, routing, and speedrun map state.
 
-It reads Cemu save files directly, without mods or emulator plugins, then renders live completion stats, player position, route-relevant markers, and save-slot state in a native Electron window.
+It reads Cemu save files directly, without mods or emulator plugins, and shows completion stats, player position, route markers, and save-slot state in a native Electron window.
 
-> Current source: **v0.3.0**. BotW on Cemu (Wii U) is supported today, including Normal Mode and Master Mode saves. The app now opens in a native Electron window by default, with the browser path kept as an optional tray action.
+> Current source: **v0.3.0**. BotW on Cemu (Wii U) is supported, including Normal Mode and Master Mode saves. The app opens in its own Electron window by default. The tray still has an optional browser action.
 
 Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/xanderphillips/botw-live-savegame-monitor) and the save-tooling lineage behind it. Full credit is kept in [NOTICE.md](./NOTICE.md).
 
@@ -22,16 +22,16 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 - Save Slot picker with Auto mode and manual slot pinning.
 - Cemu title-root resolution: the app accepts a direct profile folder or a title root containing `user/<profile>/0..7`.
 - Live player stats, completion counters, player position, and Master Mode tint.
-- Stable on-screen minimap icon sizing through zoom-aware counter-scaling.
+- Stable minimap icon sizing while zooming.
 - Shrine state dropdown: `All States`, `Unactivated`, `Activated`, `Completed`.
 - Shrine state colors: unactivated orange, activated blue/orange, completed blue.
 - Per-beast Divine Beast iconography and a dedicated Shrine of Resurrection icon.
 - Collapsed Map Stats groups for Locations, Divine Beasts, and Mini-Bosses.
 - Clean tracking controls for Auto-follow, Marker visibility, and Follow zoom.
-- Always-on location labels for current map waypoints using existing display-name metadata.
-- Zoom-density tiers that keep low zoom focused on towers/player context, then add shrines, Divine Beasts, mini-bosses, other POIs, and Koroks as the map zooms in.
-- Map Stats rows can force-show zoom-suppressed categories or hide visible categories without changing the compact sidebar layout.
-- Mini-Bosses expose undefeated and defeated Hinox, Talus, and Molduga rows independently.
+- Always-on location labels for current map waypoints.
+- Zoom-density tiers: towers at low zoom, then shrines and Divine Beasts, then bosses and POIs, then Koroks.
+- Map Stats rows can force-show zoom-hidden categories or hide visible categories without changing the compact sidebar.
+- Separate undefeated and defeated rows for Hinox, Talus, and Molduga.
 - Native Electron app window by default, with close-to-tray behavior.
 - Optional tray action to open the same local app in the system browser for second-device or LAN workflows.
 
@@ -39,48 +39,41 @@ Built on top of [xanderphillips/botw-live-savegame-monitor](https://github.com/x
 
 ### Native App Shell
 
-- Hyrule HUD now opens in its own Electron `BrowserWindow` instead of immediately handing off to the system browser.
-- The app keeps its tray-first lifetime model: closing the window hides it to tray, and Quit remains explicit in the tray menu.
-- The tray menu now has `Open Window` as the primary app action and keeps `Open in Browser` as an optional fallback for LAN, second-device, or debugging workflows.
-- The native window reuses the setup window's hardened Electron pattern: `contextIsolation: true`, `nodeIntegration: false`, and a preload bridge.
+Hyrule HUD opens in its own Electron `BrowserWindow` instead of handing the UI to the system browser. Closing the window hides it to tray; Quit stays in the tray menu.
+
+The tray now uses `Open Window` as the main action and keeps `Open in Browser` for LAN, second-device, or debugging workflows. The main window follows the same Electron security pattern as setup: `contextIsolation: true`, `nodeIntegration: false`, and a preload bridge.
 
 ### Map Density And Labels
 
-- Map icon density now follows a Zelda Dungeon-style zoom ladder:
-  - Minimum zoom focuses on overview anchors such as towers and player context.
-  - Slightly above minimum zoom adds shrines and Divine Beasts.
-  - Mid zoom adds mini-bosses and most non-Korok POIs.
-  - Koroks appear later than other items because of their density, but not so late that the map becomes frustrating to use.
-- Labels now trail their matching icons, so a type can become useful as an icon before its text labels are allowed to crowd the map.
-- Sidebar toggles no longer reset zoom-hidden icons or labels until the next zoom event. User-hidden state and zoom-density state are now composed separately.
+Map icon density now follows a Zelda Dungeon-style zoom ladder. Minimum zoom shows overview anchors such as towers and player context. The next tier adds shrines and Divine Beasts. Mid zoom adds mini-bosses and most non-Korok POIs. Koroks come later because they are dense, but not so late that they feel buried.
+
+Labels trail their matching icons. Boss icons can appear early without dumping every boss label onto the map. Sidebar toggles also stopped resetting zoom-hidden icons and labels; user-hidden state and zoom-density state are composed separately.
 
 ### Explicit Map Visibility Controls
 
-- Map Stats rows now support Zelda Dungeon-style explicit visibility behavior:
-  - Clicking a zoom-hidden row force-shows that category at the current zoom level.
-  - Clicking a visible row hides that category.
-  - Clicking a user-hidden row shows it again.
-- The explicit controls are integrated as invisible 18x18 hit targets over the existing icon rail, so the visible sidebar UI remains the original compact stat-dot layout.
-- Hidden state still wins over force-visible state, and the server prevents `hiddenTypes` and `forcedVisibleTypes` from persisting contradictory values.
-- Labels still respect their label-density thresholds even when icons are force-shown, preventing low-zoom label overload.
+Map Stats rows now behave more like Zelda Dungeon filters. Click a zoom-hidden row to force-show that category at the current zoom. Click a visible row to hide it. Click a hidden row to show it again.
+
+The click targets sit over the existing icon rail, so the sidebar keeps the original compact stat-dot layout. Hidden state still wins over force-visible state, and the server prevents `hiddenTypes` and `forcedVisibleTypes` from storing contradictory values. Labels still obey their own density thresholds when icons are force-shown.
 
 ### Mini-Boss Filters
 
-- Mini-Bosses now expose undefeated and defeated rows separately:
-  - `Hinox`
-  - `Hinox Defeated`
-  - `Talus`
-  - `Talus Defeated`
-  - `Molduga`
-  - `Molduga Defeated`
-- This makes it possible to hide defeated bosses while keeping undefeated bosses visible, or force-show only a specific boss family at low zoom.
+Mini-Bosses now split undefeated and defeated rows:
+
+- `Hinox`
+- `Hinox Defeated`
+- `Talus`
+- `Talus Defeated`
+- `Molduga`
+- `Molduga Defeated`
+
+You can hide defeated bosses while keeping undefeated bosses visible, or force-show one boss family at low zoom.
 
 ### Fixes And Polish
 
-- Fixed the map-density reset bug where toggling sidebar categories made labels/icons appear frantically until the next zoom change.
+- Fixed the map-density reset bug where toggling sidebar categories made hidden labels and icons reappear until the next zoom change.
 - Fixed mini-boss label thresholds so boss icons can appear early while their labels render later.
-- Preserved the existing Shrine summary glyph and Map Stats rail alignment while adding visibility behavior.
-- Corrected several iterations of sidebar-control styling so the final controls do not move icons, select text, draw slash marks, or obstruct counts.
+- Kept the existing Shrine summary glyph and Map Stats rail alignment while adding visibility controls.
+- Removed the visible sidebar-control styling that moved icons, selected text, drew slash marks, or covered counts.
 
 ### Verification
 
