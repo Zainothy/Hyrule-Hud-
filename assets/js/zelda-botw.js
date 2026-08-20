@@ -587,6 +587,7 @@ SavegameEditor = {
     markLabels(mapObjects, className) {
         var map = document.getElementById('map-container');
         var fragment = document.createDocumentFragment();
+        var minPct = poiLabelMinPct(className);
 
         for (var internal_name in mapObjects) {
             var mapObject = mapObjects[internal_name];
@@ -596,6 +597,7 @@ SavegameEditor = {
             label.className = 'poi-label poi-label-' + className;
             label.textContent = mapObject.display_name;
             label.setAttribute('data-waypoint-id', markerName);
+            label.setAttribute('data-poi-min-pct', minPct);
             if (mapObject.location_type) {
                 label.setAttribute('data-location-type', mapObject.location_type);
             }
@@ -605,6 +607,7 @@ SavegameEditor = {
         }
 
         map.appendChild(fragment);
+        updatePoiLabelVisibility();
     },
 
     drawKorokPaths(notFoundKoroks) {
@@ -1362,6 +1365,52 @@ window.addEventListener(
 
 // Render region name labels on the map at zoom-appropriate detail levels.
 // level 0 = main regions (zoomed out), level 1 = broad areas, level 2 = sub-regions.
+// Phase 2b — zoom-density thresholds for point-of-interest labels (Phase 2a
+// made them always-on, which was too busy zoomed out — this fixes that).
+// pct is 0 at minZoom (fully zoomed out) to 1 at maxZoom (fully zoomed in),
+// same convention as initRegionLabels() below. Sparser categories (towers,
+// divine beasts) show earliest; densest (mini-bosses) show latest.
+// Matches by prefix so state variants (shrine-completed, hinox-defeated,
+// etc.) fall into the same bucket as their base category without needing
+// every variant enumerated.
+function poiLabelMinPct(className) {
+    if (className.indexOf('tower') === 0 || className.indexOf('divine-beast') === 0)
+        return 0.15;
+    if (className.indexOf('shrine') === 0) return 0.35;
+    if (
+        className.indexOf('hinox') === 0 ||
+        className.indexOf('talus') === 0 ||
+        className.indexOf('molduga') === 0
+    )
+        return 0.55;
+    return 0.5; // location, location-discovered, warp, labo
+}
+
+var _poiLabelZoomRegistered = false;
+
+// Re-queries the DOM live rather than tracking created elements, since
+// labels get fully recreated on every save-poll refresh (removeAllWaypoints
+// clears them) and can come from either the real-save render path or the
+// no-save preview path — this works correctly regardless of which created
+// them, or whether they're brand new since the last zoom event.
+function updatePoiLabelVisibility() {
+    if (!window.MapView) return;
+    var zi = window.MapView.getZoomInfo();
+    var pct =
+        zi.maxZoom > zi.minZoom
+            ? (zi.scale - zi.minZoom) / (zi.maxZoom - zi.minZoom)
+            : 0;
+    var labels = document.querySelectorAll('.poi-label');
+    for (var i = 0; i < labels.length; i++) {
+        var minPct = parseFloat(labels[i].getAttribute('data-poi-min-pct'));
+        labels[i].style.display = pct >= minPct ? '' : 'none';
+    }
+    if (!_poiLabelZoomRegistered && window.MapView.onZoom) {
+        _poiLabelZoomRegistered = true;
+        window.MapView.onZoom(updatePoiLabelVisibility);
+    }
+}
+
 function initRegionLabels() {
     if (!window.regionLabels || !window.MapView) return;
     var container = document.getElementById('map-container');
