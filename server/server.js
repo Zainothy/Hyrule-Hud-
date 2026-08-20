@@ -347,10 +347,38 @@ app.patch('/api/state/hidden-types', (req, res) => {
     }
     const state = readState();
     const set = new Set(state.hiddenTypes);
+    const forcedSet = new Set(state.forcedVisibleTypes || []);
     hidden ? set.add(type) : set.delete(type);
+    if (hidden) forcedSet.delete(type);
+    const patch = { hiddenTypes: Array.from(set) };
+    if (hidden) patch.forcedVisibleTypes = Array.from(forcedSet);
     res.json({
         ok: true,
-        state: writeStateAndBroadcast({ hiddenTypes: Array.from(set) })
+        state: writeStateAndBroadcast(patch)
+    });
+});
+
+// PATCH /api/state/forced-visible-types — force icon type visibility regardless of zoom density
+// Body: { type: string, forceVisible: boolean }
+app.patch('/api/state/forced-visible-types', (req, res) => {
+    const { type, forceVisible } = req.body || {};
+    if (typeof type !== 'string' || typeof forceVisible !== 'boolean') {
+        res.status(400).json({
+            ok: false,
+            error: 'Body must include type (string) and forceVisible (boolean)'
+        });
+        return;
+    }
+    const state = readState();
+    const set = new Set(state.forcedVisibleTypes || []);
+    const hiddenSet = new Set(state.hiddenTypes || []);
+    forceVisible ? set.add(type) : set.delete(type);
+    if (forceVisible) hiddenSet.delete(type);
+    const patch = { forcedVisibleTypes: Array.from(set) };
+    if (forceVisible) patch.hiddenTypes = Array.from(hiddenSet);
+    res.json({
+        ok: true,
+        state: writeStateAndBroadcast(patch)
     });
 });
 
@@ -391,10 +419,42 @@ app.patch('/api/state/hidden-types-bulk', (req, res) => {
     }
     const state = readState();
     const set = new Set(state.hiddenTypes);
+    const forcedSet = new Set(state.forcedVisibleTypes || []);
     types.forEach((t) => (hidden ? set.add(t) : set.delete(t)));
+    if (hidden) types.forEach((t) => forcedSet.delete(t));
+    const patch = { hiddenTypes: Array.from(set) };
+    if (hidden) patch.forcedVisibleTypes = Array.from(forcedSet);
     res.json({
         ok: true,
-        state: writeStateAndBroadcast({ hiddenTypes: Array.from(set) })
+        state: writeStateAndBroadcast(patch)
+    });
+});
+
+// PATCH /api/state/forced-visible-types-bulk — force or release supplied map types from zoom density
+// Body: { types: string[], forceVisible: boolean }
+app.patch('/api/state/forced-visible-types-bulk', (req, res) => {
+    const { types, forceVisible } = req.body || {};
+    if (
+        !Array.isArray(types) ||
+        types.length === 0 ||
+        typeof forceVisible !== 'boolean'
+    ) {
+        res.status(400).json({
+            ok: false,
+            error: 'Body must include types (non-empty string[]) and forceVisible (boolean)'
+        });
+        return;
+    }
+    const state = readState();
+    const set = new Set(state.forcedVisibleTypes || []);
+    const hiddenSet = new Set(state.hiddenTypes || []);
+    types.forEach((t) => (forceVisible ? set.add(t) : set.delete(t)));
+    if (forceVisible) types.forEach((t) => hiddenSet.delete(t));
+    const patch = { forcedVisibleTypes: Array.from(set) };
+    if (forceVisible) patch.hiddenTypes = Array.from(hiddenSet);
+    res.json({
+        ok: true,
+        state: writeStateAndBroadcast(patch)
     });
 });
 

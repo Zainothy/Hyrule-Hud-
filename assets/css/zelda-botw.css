@@ -604,6 +604,7 @@ body.test-mode #test-banner {
     margin: 0;
     min-height: 28px;
     padding: 3px 8px;
+    position: relative;
 }
 #map-stats-section label[data-type]::before,
 .stat-dot {
@@ -615,7 +616,7 @@ body.test-mode #test-banner {
 }
 #map-stats-section label[data-type]::before {
     grid-column: 1;
-    justify-self: start;
+    justify-self: center;
 }
 #toolbar label[data-type='korok']::before {
     background: #c6b96f;
@@ -693,6 +694,11 @@ body.test-mode #test-banner {
 #toolbar label[data-type='hinox-defeated']::before {
     background: #6b6b6b;
 }
+#toolbar label[data-type='hinox']::before,
+#toolbar label[data-type='talus']::before,
+#toolbar label[data-type='molduga']::before {
+    background: #9d9883;
+}
 #toolbar label[data-type='talus-defeated']::before {
     background: #6b6b6b;
 }
@@ -753,6 +759,7 @@ body.test-mode #test-banner {
     row-gap: 5px;
     gap: 8px;
     padding: 4px 8px;
+    position: relative;
 }
 .filter-summary-row {
     display: contents;
@@ -792,7 +799,7 @@ body.test-mode #test-banner {
 .filter-summary-icon,
 .stat-collapse-group summary .stat-dot {
     grid-column: 1;
-    justify-self: start;
+    justify-self: center;
 }
 .shrine-summary-icon {
     position: relative;
@@ -847,6 +854,7 @@ body.test-mode #test-banner {
     list-style: none;
     cursor: pointer;
     color: var(--botw-gold);
+    position: relative;
     user-select: none;
 }
 .stat-collapse-group summary::-webkit-details-marker {
@@ -867,6 +875,48 @@ body.test-mode #test-banner {
     min-height: 26px;
     padding-left: 14px;
     background: rgba(255, 255, 255, 0.018);
+}
+.map-visibility-hit-target {
+    all: unset;
+}
+#map-stats-section .map-visibility-hit-target {
+    box-sizing: border-box;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    z-index: 2;
+    width: 18px;
+    height: 18px;
+    min-width: 0;
+    max-width: 18px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    background-image: none;
+    box-shadow: none;
+    color: transparent;
+    font-size: 0;
+    text-shadow: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-50%);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+#map-stats-section .stat-collapse-group label[data-type] .map-visibility-hit-target {
+    left: 11px;
+}
+#shrine-filter-group .filter-summary-row .map-visibility-hit-target {
+    top: 4px;
+    transform: none;
+}
+#map-stats-section .map-visibility-hit-target:focus-visible {
+    opacity: 1;
+    outline: 1px solid rgba(28, 183, 255, 0.8);
+    outline-offset: -5px;
 }
 .sr-only {
     position: absolute;
