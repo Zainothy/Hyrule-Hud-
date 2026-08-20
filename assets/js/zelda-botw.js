@@ -572,11 +572,16 @@ SavegameEditor = {
             if (markerName === 'Location_StartPoint') {
                 waypoint.classList.add('shrine-resurrection');
             }
+            waypoint.setAttribute(
+                'data-zoom-min-pct',
+                waypointIconMinPct(className, markerName)
+            );
 
             fragment.appendChild(waypoint);
         }
 
         map.appendChild(fragment);
+        updateMapDensityVisibility();
     },
 
     // Phase 2a — always-on point-of-interest name labels. Same coordinate
@@ -607,7 +612,7 @@ SavegameEditor = {
         }
 
         map.appendChild(fragment);
-        updatePoiLabelVisibility();
+        updateMapDensityVisibility();
     },
 
     drawKorokPaths(notFoundKoroks) {
@@ -1365,49 +1370,116 @@ window.addEventListener(
 
 // Render region name labels on the map at zoom-appropriate detail levels.
 // level 0 = main regions (zoomed out), level 1 = broad areas, level 2 = sub-regions.
-// Phase 2b — zoom-density thresholds for point-of-interest labels (Phase 2a
-// made them always-on, which was too busy zoomed out — this fixes that).
+// Phase 2b — zoom-density thresholds for map icons and point-of-interest labels.
 // pct is 0 at minZoom (fully zoomed out) to 1 at maxZoom (fully zoomed in),
-// same convention as initRegionLabels() below. Sparser categories (towers,
-// divine beasts) show earliest; densest (mini-bosses) show latest.
+// same convention as initRegionLabels() below. The overview keeps only the
+// strongest navigational anchors, then progressively adds bosses/locations,
+// with koroks last because their 900-point density overwhelms the map.
 // Matches by prefix so state variants (shrine-completed, hinox-defeated,
 // etc.) fall into the same bucket as their base category without needing
 // every variant enumerated.
-function poiLabelMinPct(className) {
-    if (className.indexOf('tower') === 0 || className.indexOf('divine-beast') === 0)
-        return 0.15;
-    if (className.indexOf('shrine') === 0) return 0.35;
-    if (
+function isCoreMapType(className) {
+    return (
+        className.indexOf('tower') === 0 ||
+        className.indexOf('shrine') === 0 ||
+        className.indexOf('divine-beast') === 0 ||
+        className.indexOf('player-position') === 0
+    );
+}
+
+function isMiniBossType(className) {
+    return (
         className.indexOf('hinox') === 0 ||
         className.indexOf('talus') === 0 ||
         className.indexOf('molduga') === 0
-    )
-        return 0.55;
-    return 0.5; // location, location-discovered, warp, labo
+    );
 }
 
-var _poiLabelZoomRegistered = false;
+function waypointIconMinPct(className, markerName) {
+    if (markerName === 'Location_StartPoint') return 0;
+    if (isCoreMapType(className)) return 0;
+    if (isMiniBossType(className)) return 0.18;
+    if (
+        className.indexOf('location-discovered') === 0 ||
+        className.indexOf('labo') === 0 ||
+        className.indexOf('warp') === 0
+    )
+        return 0.26;
+    if (className.indexOf('location') === 0) return 0.32;
+    if (className.indexOf('korok') === 0) return 0.42;
+    return 0.3;
+}
+
+function poiLabelMinPct(className) {
+    if (className.indexOf('tower') === 0 || className.indexOf('divine-beast') === 0)
+        return 0.08;
+    if (className.indexOf('shrine') === 0) return 0.18;
+    if (isMiniBossType(className)) return 0.25;
+    if (
+        className.indexOf('location-discovered') === 0 ||
+        className.indexOf('labo') === 0 ||
+        className.indexOf('warp') === 0
+    )
+        return 0.32;
+    return 0.38; // undiscovered locations
+}
+
+var _mapDensityZoomRegistered = false;
+
+function currentZoomPct() {
+    if (!window.MapView) return 1;
+    var zi = window.MapView.getZoomInfo();
+    return zi.maxZoom > zi.minZoom
+        ? (zi.scale - zi.minZoom) / (zi.maxZoom - zi.minZoom)
+        : 0;
+}
+
+function setVisibilityFlag(element, flagName, hidden) {
+    var attr = 'data-hidden-by-' + flagName;
+    if (hidden) element.setAttribute(attr, 'true');
+    else element.removeAttribute(attr);
+    element.style.display =
+        element.hasAttribute('data-hidden-by-user') ||
+        element.hasAttribute('data-hidden-by-zoom')
+            ? 'none'
+            : '';
+}
+
+function setSelectorVisibilityFlag(selector, flagName, hidden) {
+    [].forEach.call(document.querySelectorAll(selector), function (element) {
+        setVisibilityFlag(element, flagName, hidden);
+    });
+}
 
 // Re-queries the DOM live rather than tracking created elements, since
-// labels get fully recreated on every save-poll refresh (removeAllWaypoints
+// waypoints get fully recreated on every save-poll refresh (removeAllWaypoints
 // clears them) and can come from either the real-save render path or the
 // no-save preview path — this works correctly regardless of which created
 // them, or whether they're brand new since the last zoom event.
-function updatePoiLabelVisibility() {
-    if (!window.MapView) return;
-    var zi = window.MapView.getZoomInfo();
-    var pct =
-        zi.maxZoom > zi.minZoom
-            ? (zi.scale - zi.minZoom) / (zi.maxZoom - zi.minZoom)
-            : 0;
-    var labels = document.querySelectorAll('.poi-label');
-    for (var i = 0; i < labels.length; i++) {
-        var minPct = parseFloat(labels[i].getAttribute('data-poi-min-pct'));
-        labels[i].style.display = pct >= minPct ? '' : 'none';
+function updateMapDensityVisibility() {
+    var pct = currentZoomPct();
+    var waypoints = document.querySelectorAll('.waypoint');
+    for (var i = 0; i < waypoints.length; i++) {
+        var waypointMinPct = parseFloat(
+            waypoints[i].getAttribute('data-zoom-min-pct')
+        );
+        if (isNaN(waypointMinPct)) waypointMinPct = 0;
+        setVisibilityFlag(waypoints[i], 'zoom', pct < waypointMinPct);
     }
-    if (!_poiLabelZoomRegistered && window.MapView.onZoom) {
-        _poiLabelZoomRegistered = true;
-        window.MapView.onZoom(updatePoiLabelVisibility);
+    var labels = document.querySelectorAll('.poi-label');
+    for (var j = 0; j < labels.length; j++) {
+        var minPct = parseFloat(labels[j].getAttribute('data-poi-min-pct'));
+        if (isNaN(minPct)) minPct = 0;
+        setVisibilityFlag(labels[j], 'zoom', pct < minPct);
+    }
+    setSelectorVisibilityFlag(
+        '#path-group .line',
+        'zoom',
+        pct < waypointIconMinPct('korok')
+    );
+    if (!_mapDensityZoomRegistered && window.MapView && window.MapView.onZoom) {
+        _mapDensityZoomRegistered = true;
+        window.MapView.onZoom(updateMapDensityVisibility);
     }
 }
 
@@ -1454,26 +1526,12 @@ function initRegionLabels() {
 
 // Toolbar label hover — highlight matching map icons
 function setWaypointTypeVisible(type, visible) {
-    [].forEach.call(
-        document.querySelectorAll('.waypoint.' + type),
-        function (wp) {
-            wp.style.display = visible ? '' : 'none';
-        }
-    );
-    [].forEach.call(
-        document.querySelectorAll('.poi-label-' + type),
-        function (label) {
-            label.style.display = visible ? '' : 'none';
-        }
-    );
+    setSelectorVisibilityFlag('.waypoint.' + type, 'user', !visible);
+    setSelectorVisibilityFlag('.poi-label-' + type, 'user', !visible);
     if (type === 'korok') {
-        [].forEach.call(
-            document.querySelectorAll('#path-group .line'),
-            function (ln) {
-                ln.style.display = visible ? '' : 'none';
-            }
-        );
+        setSelectorVisibilityFlag('#path-group .line', 'user', !visible);
     }
+    updateMapDensityVisibility();
 }
 
 function syncPlayerMarkerToggleState() {
@@ -1598,9 +1656,12 @@ function setupToolbarHover() {
 // Re-apply hidden states after waypoints are recreated on reload
 function applyHiddenStates() {
     [].forEach.call(
-        document.querySelectorAll('#toolbar [data-type][data-hidden="true"]'),
+        document.querySelectorAll('#toolbar [data-type]'),
         function (control) {
-            setWaypointTypeVisible(control.getAttribute('data-type'), false);
+            setWaypointTypeVisible(
+                control.getAttribute('data-type'),
+                control.getAttribute('data-hidden') !== 'true'
+            );
         }
     );
     applyShrineFilterFromHiddenTypes(_lastHiddenTypes);
@@ -1652,11 +1713,10 @@ function setupServiceToggles() {
                         service: svcType,
                         hidden: false
                     });
-                    [].forEach.call(
-                        document.querySelectorAll(getServiceMapSelector(svcType)),
-                        function (wp) {
-                            wp.style.display = '';
-                        }
+                    setSelectorVisibilityFlag(
+                        getServiceMapSelector(svcType),
+                        'user',
+                        false
                     );
                 } else {
                     label.setAttribute('data-hidden', 'true');
@@ -1664,11 +1724,10 @@ function setupServiceToggles() {
                         service: svcType,
                         hidden: true
                     });
-                    [].forEach.call(
-                        document.querySelectorAll(getServiceMapSelector(svcType)),
-                        function (wp) {
-                            wp.style.display = 'none';
-                        }
+                    setSelectorVisibilityFlag(
+                        getServiceMapSelector(svcType),
+                        'user',
+                        true
                     );
                 }
             });
@@ -1679,19 +1738,17 @@ function setupServiceToggles() {
 // Re-apply service hidden states after waypoints are recreated on reload
 function applyServiceHiddenStates() {
     [].forEach.call(
-        document.querySelectorAll(
-            '#services-section label[data-hidden="true"]'
-        ),
+        document.querySelectorAll('#services-section label[data-service]'),
         function (label) {
             var svcType = label.getAttribute('data-service');
-            [].forEach.call(
-                document.querySelectorAll(getServiceMapSelector(svcType)),
-                function (wp) {
-                    wp.style.display = 'none';
-                }
+            setSelectorVisibilityFlag(
+                getServiceMapSelector(svcType),
+                'user',
+                label.getAttribute('data-hidden') === 'true'
             );
         }
     );
+    updateMapDensityVisibility();
 }
 
 // Set up delegated event listeners on #map-container — called once on page load.
@@ -2122,6 +2179,12 @@ function playTone(key) {
     var zoomLabelTimer = null;
     var _zoomListeners = [];
 
+    function notifyZoomListeners() {
+        _zoomListeners.forEach(function (cb) {
+            cb(scale, minZoom, maxZoom);
+        });
+    }
+
     // Show the zoom percentage label briefly, then fade it out after 3s.
     // 0% = fully zoomed out (minZoom), 100% = fully zoomed in (maxZoom).
     function showZoomLabel() {
@@ -2272,9 +2335,7 @@ function playTone(key) {
         mapContainer.style.transform =
             'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')';
         document.documentElement.style.setProperty('--map-scale', scale);
-        _zoomListeners.forEach(function (cb) {
-            cb(scale, minZoom, maxZoom);
-        });
+        notifyZoomListeners();
     }
 
     // Expose map controls for external use (e.g. Track Player)
@@ -2337,6 +2398,7 @@ function playTone(key) {
                         '--map-scale',
                         scale
                     );
+                    notifyZoomListeners();
                 }, 1250);
             });
         },
@@ -2467,23 +2529,17 @@ function setupSectionHeadingToggles() {
                 [].forEach.call(labels, function (label) {
                     var svcType = label.getAttribute('data-service');
                     if (!svcType) return;
-                    [].forEach.call(
-                        document.querySelectorAll(getServiceMapSelector(svcType)),
-                        function (wp) {
-                            wp.style.display = makeHidden ? 'none' : '';
-                        }
+                    setSelectorVisibilityFlag(
+                        getServiceMapSelector(svcType),
+                        'user',
+                        makeHidden
                     );
                 });
             }
 
             // Special case: korok path lines follow the korok toggle
             if (itemsKey === 'types') {
-                [].forEach.call(
-                    document.querySelectorAll('#path-group .line'),
-                    function (ln) {
-                        ln.style.display = makeHidden ? 'none' : '';
-                    }
-                );
+                setSelectorVisibilityFlag('#path-group .line', 'user', makeHidden);
             }
 
             // Persist via bulk endpoint
