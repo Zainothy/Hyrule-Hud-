@@ -1,5 +1,12 @@
 "use strict";
-const { app, Tray, Menu, shell, nativeImage } = require("electron");
+const {
+  app,
+  Tray,
+  Menu,
+  shell,
+  nativeImage,
+  BrowserWindow,
+} = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const fs = require("fs");
@@ -285,7 +292,6 @@ process.env.STATIC_ROOT = app.getAppPath();
 const {
   startServer,
   drainSseClients,
-  hasBrowserClients,
   registerReconfigureHandler,
 } = require("../server/server");
 registerReconfigureHandler(() => reconfigure());
@@ -293,6 +299,8 @@ registerReconfigureHandler(() => reconfigure());
 let currentHttpServer = null;
 let currentConfig = null;
 let tray = null;
+let mainWindow = null;
+let isQuitting = false;
 
 async function startExpressServer(config) {
   try {
@@ -320,11 +328,6 @@ function stopExpressServer() {
   });
 }
 
-async function openBrowserUnlessConnected(url) {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  if (!hasBrowserClients()) shell.openExternal(url);
-}
-
 // ── Tray ──────────────────────────────────────────────────────────────────────
 
 function getIconPath() {
@@ -338,14 +341,58 @@ function getIconPath() {
 
 const REPO_URL = "https://github.com/Zainothy/Hyrule-Hud-";
 
+function getAppUrl(config = currentConfig) {
+  return config ? `http://localhost:${config.port}` : null;
+}
+
+function openMainWindow(url = getAppUrl()) {
+  if (!url) return;
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+    if (mainWindow.webContents.getURL() !== url) mainWindow.loadURL(url);
+    return;
+  }
+
+  mainWindow = new BrowserWindow({
+    width: 1280,
+    height: 860,
+    minWidth: 960,
+    minHeight: 640,
+    title: "Hyrule HUD",
+    icon: getIconPath(),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  mainWindow.setMenu(null);
+  mainWindow.on("close", (event) => {
+    if (isQuitting) return;
+    event.preventDefault();
+    mainWindow.hide();
+  });
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+  mainWindow.loadURL(url);
+}
+
 function buildMenu(serverOk, updateVersion = null) {
-  const url = currentConfig ? `http://localhost:${currentConfig.port}` : null;
+  const url = getAppUrl();
   const items = [
     { label: `Hyrule HUD v${app.getVersion()}`, enabled: false },
     { type: "separator" },
     serverOk && url
-      ? { label: "Open Browser", click: () => shell.openExternal(url) }
+      ? { label: "Open Window", click: () => openMainWindow(url) }
       : { label: "Server error — Reconfigure…", click: reconfigure },
+    serverOk && url
+      ? { label: "Open in Browser", click: () => shell.openExternal(url) }
+      : null,
     { label: "View on GitHub", click: () => shell.openExternal(REPO_URL) },
     { type: "separator" },
     { label: "Reconfigure…", click: reconfigure },
@@ -370,7 +417,7 @@ function buildMenu(serverOk, updateVersion = null) {
     items.push({ type: "separator" });
   }
   items.push({ label: "Quit", click: quit });
-  return Menu.buildFromTemplate(items);
+  return Menu.buildFromTemplate(items.filter(Boolean));
 }
 
 function createTray() {
@@ -378,6 +425,7 @@ function createTray() {
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
   tray.setToolTip("Hyrule HUD");
+  tray.on("double-click", () => openMainWindow());
   tray.setContextMenu(buildMenu(true));
 }
 
@@ -406,6 +454,7 @@ async function reconfigure() {
     if (ok) {
       tray.setContextMenu(buildMenu(true));
       tray.setToolTip("Hyrule HUD");
+      openMainWindow(getAppUrl(result));
     } else {
       setTrayError();
     }
@@ -417,6 +466,10 @@ async function reconfigure() {
 // ── Quit ──────────────────────────────────────────────────────────────────────
 
 async function quit() {
+  isQuitting = true;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.close();
+  }
   await stopExpressServer();
   if (tray) {
     tray.destroy();
@@ -436,7 +489,15 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on("window-all-closed", () => {
-  /* prevent default quit — we live in the tray */
+  /* prevent default quit — closing the window hides to the tray */
+});
+
+app.on("before-quit", () => {
+  isQuitting = true;
+});
+
+app.on("second-instance", () => {
+  openMainWindow();
 });
 
 app.whenReady().then(async () => {
@@ -475,11 +536,11 @@ app.whenReady().then(async () => {
       return;
     }
     const url = `http://localhost:${result.port}`;
-    await openBrowserUnlessConnected(url);
+    openMainWindow(url);
     tray.displayBalloon({
       title: "Hyrule HUD",
       content:
-        "Running in the system tray. Right-click the icon to open the browser or quit.",
+        "Running in the system tray. Close the window to hide it; right-click the icon to reopen or quit.",
       iconType: "info",
     });
     initAutoUpdater();
@@ -493,7 +554,7 @@ app.whenReady().then(async () => {
     return;
   }
 
-  await openBrowserUnlessConnected(`http://localhost:${currentConfig.port}`);
+  openMainWindow(getAppUrl());
 
   initAutoUpdater();
 });
