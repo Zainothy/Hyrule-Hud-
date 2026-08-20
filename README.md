@@ -62,49 +62,37 @@ npm run build:windows
 
 `npm run build:windows` produces an NSIS installer in `dist/` with the artifact name `Hyrule-HUD-Setup-${version}.exe`.
 
-## API
+## Local API
 
-### Live Data Feed
+Most users can ignore this. The local API exists because the Electron window and optional browser view both talk to the same Express server. It is useful for debugging save detection, checking the active slot, or building a local overlay against Hyrule HUD's live state.
 
-```http
-GET /api
+Start the app first. In development, the server uses `http://localhost:3000` unless you set `PORT`. In the installed Electron app, use the port chosen in setup; the tray's `Open in Browser` action opens the exact local URL.
+
+```powershell
+$baseUrl = "http://localhost:3000"
 ```
 
-Returns current save-derived stats such as koroks, locations, shrines, towers, Divine Beasts, hearts, stamina, rupees, playtime, motorcycle ownership, and player position.
+| Endpoint | Purpose |
+|---|---|
+| `GET /api` | Current save-derived stats: koroks, locations, shrines, towers, Divine Beasts, hearts, stamina, rupees, playtime, motorcycle state, and player position. |
+| `GET /api/slots` | Detected save slots, Normal/Master Mode labels, configured path, resolved profile path, and active pinned slot. |
+| `PATCH /api/state/pinned-slot` | Pins a save slot. Send `{ "slot": null }` to return to Auto mode. |
+| `GET /api/events` | Server-Sent Events stream used by the UI for live updates. |
 
-### Save Slots
+Examples:
 
-```http
-GET /api/slots
+```powershell
+Invoke-RestMethod "$baseUrl/api" | ConvertTo-Json -Depth 5
+Invoke-RestMethod "$baseUrl/api/slots" | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Method Patch `
+  -Uri "$baseUrl/api/state/pinned-slot" `
+  -ContentType "application/json" `
+  -Body '{ "slot": 6 }'
 ```
 
-Returns detected save slots, Normal/Master Mode labels, the configured path, the resolved path, and the active pinned slot.
-
-```json
-{
-  "ok": true,
-  "configuredPath": "C:\\Emulators\\Cemu\\mlc01\\usr\\save\\00050000\\101c9500",
-  "resolvedPath": "C:\\Emulators\\Cemu\\mlc01\\usr\\save\\00050000\\101c9500\\user\\80000001",
-  "pinnedSlot": null,
-  "slots": [
-    { "index": 0, "mode": "normal", "mtimeMs": 1786900000000 },
-    { "index": 6, "mode": "master", "mtimeMs": 1786920000000 }
-  ]
-}
-```
-
-```http
-PATCH /api/state/pinned-slot
-Content-Type: application/json
-
-{ "slot": 6 }
-```
-
-Use `{ "slot": null }` to return to Auto mode.
-
-### State And Events
-
-The server also exposes state endpoints for map view, hidden marker types, dismissed waypoints, tracking, marker visibility, shrine filtering, and Server-Sent Events at `/api/events`. See route definitions and inline OpenAPI metadata in [server/server.js](./server/server.js).
+Other state routes cover map view, hidden marker types, forced-visible marker types, dismissed waypoints, tracking, marker visibility, and shrine filtering. See the route definitions in [server/server.js](./server/server.js) when you need the exact request body.
 
 ## Map Rendering Status
 
